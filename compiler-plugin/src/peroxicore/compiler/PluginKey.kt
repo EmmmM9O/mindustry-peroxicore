@@ -1,0 +1,13 @@
+package peroxicore.complier
+
+import org.jetbrains.kotlin.*
+
+class POPluginKey(
+  val feature: String,
+) : GeneratedDeclarationKey() {
+  override fun toString(): String = "Preoxide($feature)"
+}
+
+object PluginKeys {
+  val methodEntry: GeneratedDeclarationKey = POPluginKey("MethodEntry")
+}
