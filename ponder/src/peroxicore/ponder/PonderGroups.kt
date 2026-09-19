@@ -12,28 +12,24 @@ import kotlin.Unit as KUnit
 
 object PonderGroups {
   lateinit var all: EntityGroup<Entityc>
+  lateinit var effect: EntityGroup<EffectState>
   lateinit var build: EntityGroup<Building>
   lateinit var draw: EntityGroup<Drawc>
-  lateinit var fire: EntityGroup<Fire>
   lateinit var player: EntityGroup<Player>
   lateinit var powerGraph: EntityGroup<PowerGraphUpdaterc>
-  lateinit var puddle: EntityGroup<Puddle>
   lateinit var sync: EntityGroup<Syncc>
-  lateinit var label: EntityGroup<WorldLabel>
   lateinit var unit: EntityGroup<Unit>
   lateinit var bullet: EntityGroup<Bullet>
   lateinit var weather: EntityGroup<WeatherState>
   var freeQueue: Seq<Pool.Poolable> = Seq.with()
 
   val originAll: EntityGroup<Entityc> = Groups.all
+  val originEffect: EntityGroup<EffectState> = Groups.effect
   val originBuild: EntityGroup<Building> = Groups.build
   val originDraw: EntityGroup<Drawc> = Groups.draw
-  val originFire: EntityGroup<Fire> = Groups.fire
   val originPlayer: EntityGroup<Player> = Groups.player
   val originPowerGraph: EntityGroup<PowerGraphUpdaterc> = Groups.powerGraph
-  val originPuddle: EntityGroup<Puddle> = Groups.puddle
   val originSync: EntityGroup<Syncc> = Groups.sync
-  val originLabel: EntityGroup<WorldLabel> = Groups.label
   val originUnit: EntityGroup<Unit> = Groups.unit
   val originBullet: EntityGroup<Bullet> = Groups.bullet
   val originWeather: EntityGroup<WeatherState> = Groups.weather
@@ -52,46 +48,40 @@ object PonderGroups {
     )
 
   val allI = indexMethod("all")
+  val effectI = indexMethod("effect")
   val buildI = indexMethod("build")
   val drawI = indexMethod("draw")
   val powerGraphI = indexMethod("powerGraph")
-  val puddleI = indexMethod("puddle")
   val syncI = indexMethod("sync")
-  val labelI = indexMethod("label")
   val unitI = indexMethod("unit")
   val bulletI = indexMethod("bullet")
   val playerI = indexMethod("player")
-  val fireI = indexMethod("fire")
   val weatherI = indexMethod("weather")
 
   fun begin() {
     Groups.all = all
+    Groups.effect = effect
     Groups.build = build
     Groups.draw = draw
     Groups.powerGraph = powerGraph
-    Groups.puddle = puddle
     Groups.sync = sync
-    Groups.label = label
     Groups.unit = unit
     Groups.bullet = bullet
     Groups.player = player
-    Groups.fire = fire
     Groups.weather = weather
     freeQueue_ = freeQueue
   }
 
   fun end() {
     Groups.all = originAll
+    Groups.effect = originEffect
     Groups.build = originBuild
     Groups.draw = originDraw
     Groups.powerGraph = originPowerGraph
-    Groups.puddle = originPuddle
     Groups.sync = originSync
-    Groups.label = originLabel
     Groups.unit = originUnit
     Groups.bullet = originBullet
     Groups.player = originPlayer
-    Groups.fire = originFire
     Groups.weather = originWeather
     freeQueue_ = originFreeQueue
   }
@@ -104,6 +94,14 @@ object PonderGroups {
         false
       ) { e, pos ->
         allI(e, pos)
+      }
+    effect =
+      EntityGroup(
+        EffectState::class.java,
+        false,
+        false
+      ) { e, pos ->
+        effectI(e, pos)
       }
     build =
       EntityGroup(
@@ -129,14 +127,6 @@ object PonderGroups {
       ) { e, pos ->
         powerGraphI(e, pos)
       }
-    puddle =
-      EntityGroup(
-        Puddle::class.java,
-        false,
-        false
-      ) { e, pos ->
-        puddleI(e, pos)
-      }
     sync =
       EntityGroup(
         Syncc::class.java,
@@ -144,14 +134,6 @@ object PonderGroups {
         true
       ) { e, pos ->
         syncI(e, pos)
-      }
-    label =
-      EntityGroup(
-        WorldLabel::class.java,
-        false,
-        true
-      ) { e, pos ->
-        labelI(e, pos)
       }
     unit =
       EntityGroup(
@@ -185,14 +167,6 @@ object PonderGroups {
       ) { e, pos ->
         playerI(e, pos)
       }
-    fire =
-      EntityGroup(
-        Fire::class.java,
-        false,
-        false
-      ) { e, pos ->
-        fireI(e, pos)
-      }
   }
 
   fun queueFree(obj: Pool.Poolable) {
@@ -202,15 +176,13 @@ object PonderGroups {
   fun clear() {
     isClearing = true
     all.clear()
+    effect.clear()
     player.clear()
     bullet.clear()
     build.clear()
     sync.clear()
     draw.clear()
-    puddle.clear()
-    fire.clear()
     powerGraph.clear()
-    label.clear()
     unit.clear()
     weather.clear()
     isClearing = false
@@ -230,7 +202,9 @@ object PonderGroups {
     updatePooling()
     bullet.updatePhysics()
     unit.updatePhysics()
+    effect.update()
     all.update()
+    unit.update()
     powerGraph.update()
     build.update()
     bullet.collide()

@@ -25,7 +25,7 @@ object Versions {
   const val kotlinpoet = "2.3.0"
   const val ksp = "2.3.10"
   val kotlin by lazy { Config.get("kotlinVersion") }
-  const val mindustry = "v159.7"
+  const val mindustry = "v160.4"
 }
 
 object Library {
