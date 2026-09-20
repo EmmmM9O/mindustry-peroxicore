@@ -282,9 +282,7 @@ class POIrGenerationExtension(
                   superQualifierSymbol = parentC.symbol
                   dispatchReceiver = irGet(implFunc.dispatchReceiverParameter!!)
 
-                  parentF.owner.parameters.zip(implFunc.parameters.map { irGet(it) }).forEach {
-                    (index, expr),
-                    ->
+                  parentF.owner.parameters.zip(implFunc.parameters.map { irGet(it) }).forEach { (index, expr) ->
                     arguments[index] = expr
                   }
                 }

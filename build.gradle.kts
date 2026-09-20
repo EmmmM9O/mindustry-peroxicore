@@ -2,6 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.api.tasks.*
 import java.util.*
 import javax.management.*
 
@@ -31,6 +32,8 @@ plugins {
   id("com.gradleup.shadow") version "9.3.0"
 }
 
+val modVersion = getProperty("modVersion") ?: System.getenv("MOD_VERSION") ?: "0"
+
 allprojects {
   apply(plugin = "java-library")
   apply(plugin = "maven-publish")
@@ -56,10 +59,11 @@ allprojects {
   }
 
   ksp {
-    arg("mod_version", "1")
+    arg("mod_version", modVersion)
     arg("mod_subtitle", "Radical")
     arg("mod_author", "Stellarcus")
     arg("min_game_version", Versions.mindustry.substring(1))
+    arg("mod_repo", "https://github.com/EmmmM9O/mindustry-peroxicore")
   }
 
   idea {
@@ -164,6 +168,7 @@ allprojects {
       }
     }
     register<Jar>("deploy") {
+      group = "deployment"
       dependsOn("d8Compile")
       duplicatesStrategy = DuplicatesStrategy.EXCLUDE
       archiveFileName.set("${project.packageName()}.jar")
@@ -174,15 +179,32 @@ allprojects {
     }
   }
   group = "com.github.emmmm9o"
-  version = "1.0"
+  version = modVersion
   publishing {
     publications {
       create<MavenPublication>("library") {
         from(components["java"])
         groupId = "com.github.emmmm9o"
         artifactId = project.packageName()
-        version = "1.0"
+        version = modVersion
       }
     }
+  }
+}
+
+tasks.register<Copy>("deployAll") {
+  group = "deployment"
+
+  into(layout.buildDirectory.dir("deploy"))
+  duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
+  val targetProjects = listOf(":core", ":ponder")
+
+  val deployTasks = targetProjects.map { "${it}:deploy" }
+  dependsOn(deployTasks)
+  deployTasks.forEach { mustRunAfter(it) }
+  targetProjects.forEach {
+    val sub = project(it)
+    from("${sub.layout.buildDirectory.get()}/libs/${sub.packageName()}.jar")
   }
 }

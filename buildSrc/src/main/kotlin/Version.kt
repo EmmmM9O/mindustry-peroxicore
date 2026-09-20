@@ -3,7 +3,11 @@
 import org.gradle.api.*
 import java.io.*
 
-fun Project.packageName(): String = "${rootProject.name}${path.replace(":", "-")}"
+fun Project.packageName(): String =
+  when (path) {
+    ":core" -> rootProject.name
+    else -> "${rootProject.name}${path.replace(":", "-")}"
+  }
 
 object Config {
   var rootDir: File? = null

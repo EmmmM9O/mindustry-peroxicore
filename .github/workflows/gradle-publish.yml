@@ -1,0 +1,85 @@
+name: Radical Autobuild
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options: [info, warning, debug]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          java-package: 'jdk+jmods'
+          cache: 'gradle'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android Build Tools
+        run: sdkmanager "build-tools;37.0.0"
+
+      - name: Set version
+        run: |
+          VERSION="${{ github.run_number }}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Version: $VERSION"
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build JAR
+        run: ./gradlew deployAll
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          MOD_VERSION: ${{ env.VERSION }}
+
+      - name: Release Radical
+        uses: ncipollo/release-action@v1
+        with:
+          tag: radical
+          name: Radical (${{ env.VERSION }})
+          body: |
+            ## Radical Build
+
+            **⚠️ This is an automatically built, unstable version. Use at your own risk.**
+            **⚠️ 这是自动构建的最新版本，不稳定，请谨慎使用。**
+
+            ---
+
+            ### Build Info / 构建信息
+
+            - **Version / 版本**: `${{ env.VERSION }}`
+            - **Commit / 提交**: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+            - **Branch / 分支**: `${{ github.ref_name }}`
+            - **Built at / 构建时间**: ${{ github.event.repository.updated_at }}
+
+            ### Notes / 说明
+
+            - This build is generated automatically on every push and may contain bugs.
+            - 本版本由 CI 自动构建，可能包含未修复的 bug，请勿用于生产环境。
+            - For stable releases, please check the latest stable tag.
+            - 如需稳定版本，请查看最新的稳定版 tag。
+
+          allowUpdates: true
+          artifacts: build/deploy/*.jar
+          removeArtifacts: true
+          prerelease: true
+          makeLatest: true
+          token: ${{ secrets.GITHUB_TOKEN }}
