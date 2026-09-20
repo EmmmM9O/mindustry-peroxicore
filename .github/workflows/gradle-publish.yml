@@ -29,12 +29,6 @@ jobs:
           java-package: 'jdk+jmods'
           cache: 'gradle'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android Build Tools
-        run: sdkmanager "build-tools;37.0.0"
-
       - name: Set version
         run: |
           VERSION="${{ github.run_number }}"
@@ -47,7 +41,6 @@ jobs:
       - name: Build JAR
         run: ./gradlew deployAll
         env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
           MOD_VERSION: ${{ env.VERSION }}
 
       - name: Release Radical
