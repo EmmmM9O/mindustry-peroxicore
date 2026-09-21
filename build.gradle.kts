@@ -184,8 +184,8 @@ subprojects {
     publications {
       create<MavenPublication>("library") {
         from(components["java"])
-        groupId = "com.github.emmmm9o"
-        artifactId = project.packageName()
+        groupId = "com.github.emmmm9o.peroxicore"
+        artifactId = project.path.substring(1).replace(":", "-")
         version = modVersion
       }
     }
