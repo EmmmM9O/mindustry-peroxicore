@@ -34,7 +34,7 @@ plugins {
 
 val modVersion = getProperty("modVersion") ?: System.getenv("MOD_VERSION") ?: "0"
 
-allprojects {
+subprojects {
   apply(plugin = "java-library")
   apply(plugin = "maven-publish")
   apply(plugin = "org.jetbrains.kotlin.jvm")
