@@ -79,7 +79,7 @@ open class WorldPonderActionScope(
 
   fun text(newText: String) =
     newText
-      ?.takeIf { it.isNotEmpty() && it[0] in "$@" }
+      .takeIf { it.isNotEmpty() && it[0] in "$@" }
       ?.let { Core.bundle.get(it.substring(1), it) }
       ?: newText
 

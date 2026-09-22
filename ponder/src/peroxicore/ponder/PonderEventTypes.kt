@@ -72,5 +72,6 @@ class PonderTileOverlayChangeEvent {
 }
 
 enum class PonderTrigger {
-  update, init,
+  update,
+  load,
 }
