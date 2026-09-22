@@ -47,8 +47,8 @@ repositories {
 
 ```kotlin
 dependencies {
-  compileOnlyApi("com.github.emmmM9O:mindustry-peroxicore:core:main-SNAPSHOT")
-  compileOnlyApi("com.github.emmmM9O:mindustry-peroxicore:ponder:main-SNAPSHOT")
+  compileOnly("com.github.emmmM9O.mindustry-peroxicore:core:main-SNAPSHOT")
+  compileOnly("com.github.emmmM9O.mindustry-peroxicore:ponder:main-SNAPSHOT")
 
   // 仅编译期
   ksp("com.github.emmmM9O.mindustry-peroxicore:ksp:main-SNAPSHOT")

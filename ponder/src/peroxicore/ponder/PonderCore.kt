@@ -244,8 +244,9 @@ object PonderCore : ApplicationListener, TimelineContext {
     ponder = PonderDialog()
     PonderRegistry.load()
     PonderUI.load()
+    Events.fire(PonderTrigger.init)
     Time.run(1f) {
-      PonderRegistry.show(Blocks.electrolyzer)
+//      PonderRegistry.show(Blocks.electrolyzer)
     }
   }
 

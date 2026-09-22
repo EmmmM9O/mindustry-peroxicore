@@ -1,5 +1,6 @@
 package peroxicore.ponder.api.dsl
 
+import arc.*
 import arc.graphics.*
 import arc.util.*
 import mindustry.*
@@ -76,6 +77,12 @@ open class WorldPonderActionScope(
     if (block is Floor) setFloor(block) else setBlock(block, rotation, team)
   }
 
+  fun text(newText: String) =
+    newText
+      ?.takeIf { it.isNotEmpty() && it[0] in "$@" }
+      ?.let { Core.bundle.get(it.substring(1), it) }
+      ?: newText
+
   fun Vec.label(
     info: String,
     duration: Float = 2f,
@@ -83,7 +90,7 @@ open class WorldPonderActionScope(
   ) {
     if (jump) return
     PonderUI.showLabel(
-      info,
+      text(info),
       duration,
       x,
       y,

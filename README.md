@@ -47,8 +47,8 @@ Then depend on the modules you need:
 
 ```kotlin
 dependencies {
-  compileOnlyApi("com.github.emmmM9O:mindustry-peroxicore:core:main-SNAPSHOT")
-  compileOnlyApi("com.github.emmmM9O:mindustry-peroxicore:ponder:main-SNAPSHOT")
+  compileOnly("com.github.emmmM9O.mindustry-peroxicore:core:main-SNAPSHOT")
+  compileOnly("com.github.emmmM9O.mindustry-peroxicore:ponder:main-SNAPSHOT")
 
   // compile time only
   ksp("com.github.emmmM9O.mindustry-peroxicore:ksp:main-SNAPSHOT")
