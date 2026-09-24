@@ -82,6 +82,7 @@ class ModConfigProcessor(
     if (config.author.isEmpty()) config.author = modAuthor
     if (config.minGameVersion.isEmpty()) config.minGameVersion = minGameVersion
     if (config.repo.isEmpty()) config.repo = modRepo
+    if (modHidden.isNotEmpty()) config.hidden = modHidden == "true"
     val data = json.toJson(config)
     if (logConfigs) {
       info("@ModConfig with config\n$data")
@@ -117,6 +118,10 @@ class ModConfigProcessor(
 
   val modRepo by lazy {
     options.getOrDefault(KspOptions.modRepo, "")
+  }
+
+  val modHidden by lazy {
+    options.getOrDefault(KspOptions.modHidden, "")
   }
 }
 

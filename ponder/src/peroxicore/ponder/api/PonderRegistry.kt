@@ -5,6 +5,7 @@ import arc.math.geom.*
 import arc.struct.*
 import mindustry.content.*
 import mindustry.ctype.*
+import mindustry.game.*
 import mindustry.gen.*
 import peroxicore.ponder.*
 import peroxicore.ponder.api.dsl.*
@@ -27,6 +28,7 @@ object PonderRegistry {
           Weathers.rain.create()
           (8 at 5).build(Blocks.electrolyzer)
           (9 at 5).label("电解机", 4f)
+          UnitTypes.flare.spawn(Team.get(2), 6 * 4f, 5 * 8f)
         }
         frame(200f) {
           (4 at 3).focus(5)

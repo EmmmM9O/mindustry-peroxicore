@@ -10,6 +10,7 @@ import mindustry.game.*
 import mindustry.game.EventType.*
 import mindustry.graphics.*
 import peroxicore.ponder.*
+import peroxicore.ponder.world.*
 import peroxicore.utils.handler.*
 import universe.util.reflect.*
 
@@ -40,9 +41,6 @@ class OriginPonderRenderer : PonderRenderer {
 
   override val camera = Camera()
   lateinit var originCamera: Camera
-
-  val tileChange = TileChangeEvent()
-  val preChange = TilePreChangeEvent()
 
   lateinit var originOverlays: OverlayRenderer
   lateinit var overlays: OverlayRenderer
@@ -78,6 +76,7 @@ class OriginPonderRenderer : PonderRenderer {
     overlays = DefaultOverlayRenderer()
 
     blocks = BlockRenderer()
+    blocks.cracks = Vars.renderer.blocks.cracks
     // 删去BlockRenderer的部分事件
     EventsHandler.removeLast<WorldLoadEvent>()
     EventsHandler.removeLast<WorldLoadEvent>() // Floor
@@ -86,11 +85,11 @@ class OriginPonderRenderer : PonderRenderer {
     EventsHandler.removeLastRun(Trigger.newGame)
 
     Events.on(PonderTilePreChangeEvent::class.java) { event ->
-      tpc.get(preChange.set(event.tile))
+      tpc.get(PonderTile.oriPreChange.set(event.tile))
     }
 
     Events.on(PonderTileChangeEvent::class.java) { event ->
-      tc.get(tileChange.set(event.tile))
+      tc.get(PonderTile.oriTileChange.set(event.tile))
     }
 
     Events.run(EventType.Trigger.draw) {

@@ -64,6 +64,7 @@ subprojects {
     arg("mod_author", "Stellarcus")
     arg("min_game_version", Versions.mindustry.substring(1))
     arg("mod_repo", "https://github.com/EmmmM9O/mindustry-peroxicore")
+    arg("mod_hidden", "true")
   }
 
   idea {

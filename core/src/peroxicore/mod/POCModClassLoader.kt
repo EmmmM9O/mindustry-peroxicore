@@ -1,8 +1,10 @@
 package peroxicore.mod
 
 import arc.struct.*
+import arc.util.*
+import peroxicore.util.*
 
-class PXCModClassLoader(
+class POCModClassLoader(
   parent: ClassLoader,
 ) : ClassLoader(parent) {
   private val children = Seq<ClassLoader>()
@@ -24,7 +26,10 @@ class PXCModClassLoader(
         parent.loadClass(name)
       } else {
         runCatching { findClass(name) }
-          .getOrElse { parent.loadClass(name) }
+          .getOrElse {
+            inChild.set(true)
+            parent.loadClass(name)
+          }
       }
   // }
 
@@ -35,6 +40,8 @@ class PXCModClassLoader(
       inChild.set(false)
       throw ClassNotFoundException(name)
     }
+
+//    Log.info("Load $name ${getCurrentLocation()}")
 
     var last: ClassNotFoundException? = null
     val size = children.size
@@ -62,5 +69,6 @@ class PXCModClassLoader(
         startsWith("javax.") ||
         startsWith("jdk.") ||
         startsWith("android.") ||
+        startsWith("kotlin.") ||
         startsWith("sun.")
 }

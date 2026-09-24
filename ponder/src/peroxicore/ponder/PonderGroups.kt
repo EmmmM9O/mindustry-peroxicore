@@ -207,6 +207,7 @@ object PonderGroups {
     unit.update()
     powerGraph.update()
     build.update()
+    bullet.update()
     bullet.collide()
   }
 

@@ -12,21 +12,24 @@ import mindustry.net.*
 import mindustry.net.Net.*
 import mindustry.type.*
 import mindustry.ui.FileChooser.*
+import peroxicore.util.*
 import java.net.*
 
-class PXCPlatform(
+class POCPlatform(
   val platform: Platform,
   val core: ClassLoader,
 ) : Platform by platform {
-  val coreLoader = PXCModClassLoader(core)
+  val coreLoader = POCModClassLoader(core)
 
   @Throws(Exception::class)
   override fun loadJar(
     jar: Fi,
     parent: ClassLoader,
   ): ClassLoader =
-    PXCMods.load(jar)?.takeIf { it.peroxicoreLoader }?.let {
-      platform.loadJar(jar, coreLoader)
+    POCMods.load(jar)?.takeIf { it.peroxicoreLoader }?.let {
+      platform.loadJar(jar, coreLoader).also {
+        coreLoader.addChild(it)
+      }
     } ?: platform.loadJar(jar, parent)
 
   override fun updateLobby() = platform.updateLobby()

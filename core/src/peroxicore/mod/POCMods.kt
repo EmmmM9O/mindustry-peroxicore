@@ -5,7 +5,7 @@ import arc.util.*
 import arc.util.serialization.*
 import arc.util.serialization.Jval.*
 
-object PXCMods {
+object POCMods {
   val json = Json()
   val metaFiles = arrayOf("peroxicore.json")
 

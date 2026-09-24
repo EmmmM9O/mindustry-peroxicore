@@ -13,7 +13,7 @@ import peroxicore.utils.handler.*
 class PeroxiCore : Mod() {
   init {
     EventsHandler.setup()
-    Vars.platform = PXCPlatform(Vars.platform, this.javaClass.classLoader)
+    Vars.platform = POCPlatform(Vars.platform, this.javaClass.classLoader)
   }
 
   override fun init() {}

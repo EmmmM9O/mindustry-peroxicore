@@ -1,5 +1,11 @@
-# PeroxiCore
+<p align="center">
+  <picture>
+    <img src="img/peroxicore-title-dark.png" alt="Mindistry Peroxicore" width="100%">
+  </picture>
+</p>
 
+# PeroxiCore
+[![GitHub stars](https://img.shields.io/github/stars/EmmmM9O/mindustry-peroxicore?style=flat&label=stars)](https://github.com/EmmmM9O/mindustry-peroxicore/stargazers)  
 [![GitHub release](https://img.shields.io/github/v/release/EmmmM9O/mindustry-peroxicore?sort=semver&label=release)](https://github.com/EmmmM9O/mindustry-peroxicore/releases)
 [![GitHub issues](https://img.shields.io/github/issues/EmmmM9O/mindustry-peroxicore?label=issues)](https://github.com/EmmmM9O/mindustry-peroxicore/issues)
 [![License](https://img.shields.io/github/license/EmmmM9O/mindustry-peroxicore?label=license)](https://github.com/EmmmM9O/mindustry-peroxicore/blob/main/LICENSE)

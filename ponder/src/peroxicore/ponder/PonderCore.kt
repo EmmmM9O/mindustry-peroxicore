@@ -6,6 +6,7 @@ import arc.graphics.g2d.*
 import arc.struct.*
 import arc.util.*
 import mindustry.*
+import mindustry.ai.*
 import mindustry.content.*
 import mindustry.core.*
 import mindustry.game.*
@@ -71,6 +72,8 @@ fun Tiles.unitWidth() = Vars.tilesize * width
 fun Tiles.unitHeight() = Vars.tilesize * height
 
 object PonderCore : ApplicationListener, TimelineContext {
+  lateinit var originIndexer: BlockIndexer
+  var indexer = PonderBlockIndexer()
   lateinit var originTiles: Tiles
 
   lateinit var ponder: PonderDialog
@@ -216,6 +219,8 @@ object PonderCore : ApplicationListener, TimelineContext {
     ponderer = UnitTypes.alpha.spawn(team, 16f, 16f)
     renderer.beginWorld()
     input.beginWorld()
+    indexer.reload()
+    Events.fire(PonderTrigger.worldLoad)
     end()
     sceneEnd = false
   }
@@ -362,7 +367,9 @@ object PonderCore : ApplicationListener, TimelineContext {
     if (Vars.world.tiles != tiles) originTiles = Vars.world.tiles
     if (Vars.player?.unit() != ponderer) originUnit = Vars.player?.unit()
     if (ponderer != null) Vars.player?.apply { unit_ = ponderer }
+    if (Vars.indexer != indexer) originIndexer = Vars.indexer
     Vars.world.tiles = tiles
+    Vars.indexer = indexer
     Vars.state = state
     originActive = Vars.net.active
     Vars.net.active = false
@@ -374,6 +381,7 @@ object PonderCore : ApplicationListener, TimelineContext {
   fun end() {
     Vars.state = originState
     Vars.world.tiles = originTiles
+    Vars.indexer = originIndexer
     Vars.net.active = originActive
     Vars.player?.apply { unit_ = originUnit }
     input.end()

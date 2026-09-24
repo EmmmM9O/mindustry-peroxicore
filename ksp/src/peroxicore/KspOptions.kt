@@ -9,4 +9,5 @@ object KspOptions {
   const val modAuthor = "mod_author"
   const val minGameVersion = "min_game_version"
   const val modRepo = "mod_repo"
+  const val modHidden = "mod_hidden"
 }
