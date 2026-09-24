@@ -38,6 +38,15 @@ class Promise<R : Any, T> {
     if (done) callback?.invoke(receiver, value)
   }
 
+  inline fun <P> thenAs(crossinline next: R.(P) -> Unit) {
+    callback = { value ->
+      (value as? P)?.let {
+        next(it)
+      }
+    }
+    if (done) callback?.invoke(receiver, value)
+  }
+
   fun resolve(
     receiver: R,
     value: T,

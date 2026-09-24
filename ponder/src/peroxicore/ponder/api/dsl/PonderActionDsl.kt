@@ -143,6 +143,16 @@ open class WorldPonderActionScope(
     }
   }
 
+  fun build(
+    block: Block,
+    rotation: Int = 0,
+    duration: Float = 30f,
+    team: Team? = null,
+    config: Any? = null,
+  ) = PointSpec<Promise<WorldPonderActionScope, Building?>> {
+    this.build(block, rotation, duration, team, config)
+  }
+
   fun Point.build(
     block: Block,
     rotation: Int = 0,

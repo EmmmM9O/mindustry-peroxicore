@@ -101,4 +101,16 @@ interface PositionScope {
     val scale = if (width > height) min / height else min / width
     return width * scale to height * scale
   }
+
+  @JvmInline
+  value class PointSpec<Res>(
+    val spec: Point.() -> Res,
+  )
+
+  fun <Res> PointSpec<Res>.at(point: Point) = point.run(spec)
+
+  fun <Res> PointSpec<Res>.at(
+    x: Int,
+    y: Int,
+  ) = (x at y).run(spec)
 }
