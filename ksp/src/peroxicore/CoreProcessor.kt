@@ -61,9 +61,11 @@ class CoreProcessor(
 
           else -> {
             logger.warn(
-              "Find too more @PeroxiCoreConfig.We will only take the first.\nNumber: ${configAnnos.size}\n${configAnnos.joinToString(
-                separator = "\n"
-              ){ it.first.locate() }}"
+              "Find too more @PeroxiCoreConfig.We will only take the first.\nNumber: ${configAnnos.size}\n${
+                configAnnos.joinToString(
+                  separator = "\n"
+                ) { it.first.locate() }
+              }"
             )
             configAnnos.first()
           }

@@ -1,13 +1,13 @@
-package peroxicore.complier.fir
+package peroxicore.compiler.fir
 
 import org.jetbrains.kotlin.cli.common.messages.*
 import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.descriptors.Visibilities.Private
 import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.extensions.*
 import org.jetbrains.kotlin.fir.extensions.predicate.*
-import org.jetbrains.kotlin.fir.extensions.*
 import org.jetbrains.kotlin.fir.java.*
 import org.jetbrains.kotlin.fir.plugin.*
 import org.jetbrains.kotlin.fir.resolve.providers.*
@@ -16,21 +16,21 @@ import org.jetbrains.kotlin.fir.symbols.impl.*
 import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.fir.types.jvm.*
 import org.jetbrains.kotlin.name.*
-import peroxicore.complier.*
+import peroxicore.compiler.*
 
 @OptIn(
   SymbolInternals::class,
-  UnresolvedExpressionTypeAccess::class,
-  DirectDeclarationsAccess::class,
+  DirectDeclarationsAccess::class
 )
 class EntryFirGenerator(
   session: FirSession,
   val messageCollector: MessageCollector,
 ) : FirDeclarationGenerationExtension(session) {
   companion object {
-    fun factory(messageCollector: MessageCollector) = Factory { session ->
-      EntryFirGenerator(session, messageCollector)
-    }
+    fun factory(messageCollector: MessageCollector) =
+      Factory { session ->
+        EntryFirGenerator(session, messageCollector)
+      }
   }
 
   fun processAll() =
@@ -42,23 +42,27 @@ class EntryFirGenerator(
               anno.annotateds
                 .filter {
                   it.dispatchReceiverType!!.classId == classSymbol.classId
-                }
-                .map { it to it.getAnnotationByClassId(anno.annotationClass, session)!! }
+                }.map { it to it.getAnnotationByClassId(anno.annotationClass, session)!! }
           }
-      }
-      .toMap()
+      }.toMap()
 
   // MutableMap<ClassId, MutableList<Pair<FqName, MutableList<>>>
-
   private val predicateBasedProvider = session.predicateBasedProvider
 
   fun FirTypeRef.asCone() =
     when (this) {
-      is FirResolvedTypeRef -> coneType
-      is FirJavaTypeRef ->
+      is FirResolvedTypeRef -> {
+        coneType
+      }
+
+      is FirJavaTypeRef -> {
         (resolveIfJavaType(session, JavaTypeParameterStack.EMPTY, null) as FirResolvedTypeRef)
           .coneType
-      else -> throw RuntimeException("Unknown typeref $this")
+      }
+
+      else -> {
+        throw RuntimeException("Unknown typeref $this")
+      }
     }
 
   fun ConeClassLikeType.toFir() =
@@ -87,7 +91,7 @@ class EntryFirGenerator(
     val status = this.status
     val modality = status.modality
     val visibility = status.visibility
-    return visibility != Visibilities.Private && modality == Modality.OPEN
+    return visibility != Private && modality == Modality.OPEN
   }
 
   fun fillFatherFuncs(
@@ -121,12 +125,17 @@ class EntryFirGenerator(
 
   fun List<FirValueParameter>.typeStr() =
     joinToString(",") {
-      it.returnTypeRef.asCone().classId!!.asSingleFqName().asString()
+      it.returnTypeRef
+        .asCone()
+        .classId!!
+        .asSingleFqName()
+        .asString()
     }
 
-  fun List<FirNamedFunctionSymbol>.possible(method: String) = filter {
-    it.name.asString() == method
-  }
+  fun List<FirNamedFunctionSymbol>.possible(method: String) =
+    filter {
+      it.name.asString() == method
+    }
 
   fun List<FirNamedFunctionSymbol>.findFunction(
     method: String,
@@ -158,7 +167,6 @@ class EntryFirGenerator(
         .filterIsInstance<FirResolvedTypeRef>()
         .map { it.coneType }
         .filterIsInstance<ConeClassLikeType>()
-
     val ancestors = ancestorsOf(fir)
     val comps = ancestors.map { it.symbol.classId.asSingleFqName() }
     val fqName = classSymbol.classId.asSingleFqName()
@@ -166,13 +174,11 @@ class EntryFirGenerator(
     if (!all.any { (_, symbols) -> symbols.any { (name, _) -> comps.contains(name) } }) {
       return emptySet()
     }
-
     val parent = parents.firstOrNull { it.isClass() }
     val pf = mutableMapOf<Name, MutableList<FirNamedFunctionSymbol>>()
     parent?.toFir()?.let { fillFatherFuncs(pf, it) }
 
     parentsFuncs[fqName] = pf
-
     val result = mutableSetOf<Name>()
     val tname = fqName.asString()
     info("@ImplEntries Process $tname")
@@ -203,7 +209,7 @@ class EntryFirGenerator(
     // 我没有其他办法输出信息了
     messageCollector.report(
       CompilerMessageSeverity.WARNING,
-      "[PREOXIDE-INFO]: $text",
+      "[PREOXIDE-INFO]: $text"
     )
     System.err.println("[INFO]: $text")
   }
@@ -244,9 +250,8 @@ class EntryFirGenerator(
     "${dispatchReceiverType!!.classId!!.asString()}.${name.asString()}"
 
   val funcsToDefine = mutableMapOf<Pair<FqName, Name>, MutableSet<FirNamedFunctionSymbol>>()
-
   val entryProcessors =
-    mutableMapOf<ClassId, EntryProcessor>(
+    mutableMapOf(
       Annotations.MethodEntry to
         EntryProcessor { rorigin, session, messageCollector, classSymbol, result, function ->
           val (origin, annotation) = function
@@ -265,20 +270,23 @@ class EntryFirGenerator(
             val allFuncs = mutableListOf<FirNamedFunctionSymbol>()
             allFuncs.addAll(thisFuncs)
             allFuncs.addAll(parentFuncs)
-
             val func =
               allFuncs.findFunction(name, types, origin)
                 ?: run {
                   messageCollector.report(
                     CompilerMessageSeverity.ERROR,
-                    "@MethodEntry can not find suitable `$name${types.addK()}` in `${fqName.asString()}` for `${origin.printString()}`.",
+                    "@MethodEntry can not find suitable `$name${types.addK()}` in `${fqName.asString()}` for `${origin.printString()}`."
                   )
                   allFuncs
                     .takeIf { it.isNotEmpty() }
                     ?.let { possibleList ->
                       messageCollector.report(
                         CompilerMessageSeverity.ERROR,
-                        "Possible candidates: ${possibleList.map{"${it.printString()} Types:`${it.typeStr()}`"}}",
+                        "Possible candidates: ${
+                          possibleList.map {
+                            "${it.printString()} Types:`${it.typeStr()}`"
+                          }
+                        }"
                       )
                     }
                   return@also
@@ -297,7 +305,7 @@ class EntryFirGenerator(
             ?: run {
               messageCollector.report(
                 CompilerMessageSeverity.ERROR,
-                "@MethodEntry without arguement",
+                "@MethodEntry without arguement"
               )
             }
         }
@@ -308,28 +316,23 @@ class EntryFirGenerator(
     context: MemberGenerationContext?,
   ): List<FirNamedFunctionSymbol> {
     val classSymbol = context?.owner ?: return emptyList()
-    val scope = context.declaredScope ?: return emptyList()
-
     val fqName = classSymbol.classId.asSingleFqName()
     val name = callableId.callableName
     return funcsToDefine[fqName to name]!!
       .map {
         val func = it.fir
         createMemberFunction(
-            classSymbol,
-            PluginKeys.methodEntry,
-            name,
-            func.returnTypeRef.asCone(),
-          ) {
-            func.valueParameters.forEach { p ->
-              valueParameter(p.name, p.returnTypeRef.asCone())
-            }
-            modality = Modality.OPEN
+          classSymbol,
+          PluginKeys.methodEntry,
+          name,
+          func.returnTypeRef.asCone()
+        ) {
+          func.valueParameters.forEach { p ->
+            valueParameter(p.name, p.returnTypeRef.asCone())
           }
-          .symbol
-      }
-      .toList()
-
+          modality = Modality.OPEN
+        }.symbol
+      }.toList()
     /*
     val res =       copyFirFunctionWithResolvePhase(
           function,
@@ -347,7 +350,10 @@ open class AnnoMarker(
   val messageCollector: MessageCollector,
 ) : FirDeclarationGenerationExtension(session) {
   companion object {
-    fun factory(annotation: ClassId, messageCollector: MessageCollector) = Factory { session ->
+    fun factory(
+      annotation: ClassId,
+      messageCollector: MessageCollector,
+    ) = Factory { session ->
       AnnoMarker(session, annotation, messageCollector)
     }
 
@@ -355,17 +361,15 @@ open class AnnoMarker(
   }
 
   val annotation = annotationClass.asSingleFqName()
-
   private val predicateBasedProvider = session.predicateBasedProvider
-
-  val predicate = DeclarationPredicate.create {
-    hasAnnotated(annotation)
-  }
-
-  val lookup = LookupPredicate.create {
-    annotated(annotation)
-  }
-
+  val predicate =
+    DeclarationPredicate.create {
+      hasAnnotated(annotation)
+    }
+  val lookup =
+    LookupPredicate.create {
+      annotated(annotation)
+    }
   val annotateds by lazy {
     predicateBasedProvider
       .getSymbolsByPredicate(lookup)
@@ -384,7 +388,7 @@ open class AnnoMarker(
     if (fir !is FirRegularClass) {
       messageCollector.report(
         CompilerMessageSeverity.ERROR,
-        "@MethodEntry found in ${classSymbol}. But it is for class only",
+        "@MethodEntry found in $classSymbol. But it is for class only"
       )
       return emptySet()
     }

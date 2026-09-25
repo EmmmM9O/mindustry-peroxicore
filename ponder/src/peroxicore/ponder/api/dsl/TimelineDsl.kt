@@ -2,7 +2,6 @@ package peroxicore.ponder.api.dsl
 
 import arc.scene.style.*
 import peroxicore.ponder.*
-import peroxicore.ponder.api.dsl.PositionScope.*
 import peroxicore.ponder.scene.*
 
 @PonderDslMarker
@@ -54,12 +53,10 @@ open class Keyframe(
 ) : TimeMark {
   val scope: KeyframeScope
     get() = KeyframeScope.scope
-
   val context: TimelineContext
     get() = PonderCore
 
   override fun pass() {
-    scope.context = context
     scope.action()
   }
 }
@@ -87,6 +84,7 @@ open class KeyframeTimelineScope : BaseTimelineScope() {
 
   override fun build() =
     super.build().apply {
+      @Suppress("UNCHECKED_CAST")
       (marks as MutableList<Keyframe>).addAll(frames)
     }
 }
@@ -116,7 +114,6 @@ inline fun BaseTimelineScope.world(
   initializer(
     BaseTimelineInitializer(width, height) {
       val scope = BaseTimelineInitializerScope.scope
-      scope.context = this
       scope.block()
     }
   )

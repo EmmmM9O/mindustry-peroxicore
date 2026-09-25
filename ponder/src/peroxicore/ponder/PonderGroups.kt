@@ -22,7 +22,6 @@ object PonderGroups {
   lateinit var bullet: EntityGroup<Bullet>
   lateinit var weather: EntityGroup<WeatherState>
   var freeQueue: Seq<Pool.Poolable> = Seq.with()
-
   val originAll: EntityGroup<Entityc> = Groups.all
   val originEffect: EntityGroup<EffectState> = Groups.effect
   val originBuild: EntityGroup<Building> = Groups.build
@@ -35,7 +34,6 @@ object PonderGroups {
   val originWeather: EntityGroup<WeatherState> = Groups.weather
   var freeQueue_ by Groups::class.accessFieldStatic<Seq<Pool.Poolable>>("freeQueue")
   val originFreeQueue = freeQueue_
-
   var isClearing = false
 
   fun indexMethod(type: String) =

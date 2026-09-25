@@ -15,14 +15,13 @@ import mindustry.core.*
 import mindustry.entities.units.*
 import mindustry.input.*
 import mindustry.input.InputHandler.*
-import mindustry.ui.Displayable
+import mindustry.ui.*
 import mindustry.world.*
 import peroxicore.ponder.*
 import universe.util.reflect.*
 
 var InputHandler.playerPlanTree: QuadTree<BuildPlan> by accessField("playerPlanTree")
 var InputHandler.selectPlanTree: QuadTree<BuildPlan> by accessField("selectPlanTree")
-
 var InputHandler.allPlans: Eachable<BuildPlan> by accessField("allPlans")
 var InputHandler.allSelectLines: Eachable<BuildPlan> by accessField("allSelectLines")
 var InputHandler.allRenderPlansConfig: Eachable<BuildPlan> by accessField("allRenderPlansConfig")
@@ -32,10 +31,8 @@ class DefaultPonderInput : PonderInput {
   override val camRect = Rect()
   override var camSpeed = 0.1f
   override var camControl = false
-
   override var active = false
   override var isBuilding = false
-
   lateinit var input: InputHandler
   lateinit var inputHandler: DefaultPonderInputHandler
   val taskPool = Pools.get(InputTask::class.java, ::InputTask)!!
@@ -86,7 +83,7 @@ class DefaultPonderInput : PonderInput {
   override fun setup() {}
 
   override fun init() {
-    input = Vars.control.input
+    input = control.input
     inputHandler = DefaultPonderInputHandler(this)
     inputHandler.add()
   }
@@ -173,18 +170,13 @@ class DefaultPonderInputHandler(
   var hit = false
   val camera
     get() = PonderCore.camera
-
   val view
     get() = PonderCore.view
-
   val tiles
     get() = PonderCore.tiles
-
   val active
     get() = PonderCore.ponder.display
-
   val origin = input.input
-
   val linePlans = Seq<BuildPlan>()
   val selectPlans = Seq<BuildPlan>()
   val lastPlans = Queue<BuildPlan>()
@@ -193,7 +185,6 @@ class DefaultPonderInputHandler(
   lateinit var allPlans: Eachable<BuildPlan>
   lateinit var allSelectLines: Eachable<BuildPlan>
   lateinit var allRenderPlansConfig: Eachable<BuildPlan>
-
   lateinit var originLinePlans: Seq<BuildPlan>
   lateinit var originSelectPlans: Seq<BuildPlan>
   lateinit var originLastPlans: Queue<BuildPlan>
@@ -202,7 +193,6 @@ class DefaultPonderInputHandler(
   lateinit var originAllPlans: Eachable<BuildPlan>
   lateinit var originAllSelectLines: Eachable<BuildPlan>
   lateinit var originAllRenderPlansConfig: Eachable<BuildPlan>
-
   var needReset = true
 
   init {
@@ -305,9 +295,8 @@ class DefaultPonderInputHandler(
 
     updateSelectQuadtree()
     playerPlanTree.clear()
-    val unit = PonderCore.ponderer
-    if (unit == null) return
-    if (unit.isValid()) {
+    val unit = PonderCore.ponderer ?: return
+    if (unit.isValid) {
       unit.plans.each(playerPlanTree::insert)
     }
     if (unit.canBuild()) {

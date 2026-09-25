@@ -3,7 +3,8 @@ package peroxicore.mod
 import arc.files.*
 import arc.util.*
 import arc.util.serialization.*
-import arc.util.serialization.Jval.*
+import arc.util.serialization.Jval.Jformat
+import arc.util.serialization.Jval.read
 
 object POCMods {
   val json = Json()
@@ -25,12 +26,11 @@ object POCMods {
     if (metaFile == null || !metaFile.exists()) {
       return null
     }
-
     val meta =
       json
         .fromJson(
           PeroxicoreMeta::class.java,
-          Jval.read(metaFile.readString()).toString(Jformat.plain)
+          read(metaFile.readString()).toString(Jformat.plain)
         )
 
     return meta
@@ -38,7 +38,6 @@ object POCMods {
 
   fun load(sourceFile: Fi): PeroxicoreMeta? {
     val zip = resolveRoot(if (sourceFile.isDirectory()) sourceFile else ZipFi(sourceFile))
-
     val meta = findMeta(zip)
 
     if (meta != null) {

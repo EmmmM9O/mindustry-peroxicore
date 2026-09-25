@@ -1,7 +1,5 @@
 package peroxicore
 
-import com.google.devtools.ksp.*
-import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
 
 @JvmInline

@@ -2,12 +2,14 @@ package peroxicore.ponder.api.dsl
 
 import arc.math.geom.*
 import mindustry.*
+import peroxicore.annotations.*
 import kotlin.math.*
 
 @PonderDslMarker
 interface PositionScope {
   typealias Point = Point2
 
+  @Actionable
   typealias Vec = Vec2
 
   typealias Rect = arc.math.geom.Rect
@@ -25,7 +27,6 @@ interface PositionScope {
 
     val xRange
       get() = x1..x2
-
     val yRange
       get() = y1..y2
   }
@@ -51,7 +52,7 @@ interface PositionScope {
   fun Vec.center(
     width: Float,
     height: Float,
-  ) = Rect().setCentered(x, y, width, height)
+  ) = Rect().setCentered(x, y, width, height)!!
 
   fun Point.around(size: Int): Region {
     val half = (size - 1) / 2
@@ -72,7 +73,7 @@ interface PositionScope {
 
   fun Region.camera() = unit().camera()
 
-  fun Rect.camera() = move(-4f, -4f)
+  fun Rect.camera() = move(-4f, -4f)!!
 
   infix fun Float.at(y: Float) = Vec(this, y)
 
@@ -103,13 +104,13 @@ interface PositionScope {
   }
 
   @JvmInline
-  value class PointSpec<Res>(
+  value class PointAction<Res>(
     val spec: Point.() -> Res,
   )
 
-  fun <Res> PointSpec<Res>.at(point: Point) = point.run(spec)
+  fun <Res> PointAction<Res>.at(point: Point) = point.run(spec)
 
-  fun <Res> PointSpec<Res>.at(
+  fun <Res> PointAction<Res>.at(
     x: Int,
     y: Int,
   ) = (x at y).run(spec)

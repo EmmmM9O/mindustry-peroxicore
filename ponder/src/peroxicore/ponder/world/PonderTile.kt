@@ -2,7 +2,6 @@ package peroxicore.ponder.world
 
 import arc.*
 import mindustry.*
-import mindustry.game.*
 import mindustry.game.EventType.*
 import mindustry.world.*
 import peroxicore.ponder.*
@@ -13,7 +12,6 @@ class PonderTile : Tile {
     var preChange = PonderTilePreChangeEvent()
     var floorChange = PonderTileFloorChangeEvent()
     var overlayChange = PonderTileOverlayChangeEvent()
-
     val oriTileChange = TileChangeEvent()
     val oriFloorChange = TileFloorChangeEvent()
     val oriPreChange = TilePreChangeEvent()

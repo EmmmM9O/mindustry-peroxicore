@@ -10,7 +10,7 @@ import arc.scene.*
 import arc.scene.event.*
 import arc.scene.style.*
 import arc.scene.ui.*
-import arc.scene.ui.ImageButton.*
+import arc.scene.ui.ImageButton.ImageButtonStyle
 import arc.scene.ui.layout.*
 import arc.util.pooling.*
 import mindustry.*
@@ -20,7 +20,6 @@ import mindustry.ui.*
 import mindustry.ui.dialogs.*
 import peroxicore.ponder.*
 import peroxicore.ponder.scene.*
-import kotlin.Unit
 
 class TimelineBar : Element() {
   var barName = ""
@@ -35,13 +34,11 @@ class TimelineBar : Element() {
       field = value
       snap()
     }
-
   val bw =
     Core.atlas
       .find("bar-top")
       .width
       .toFloat()
-
   var fraction =
     Floatp {
       timeline?.run { PonderCore.currentTick / duration } ?: 0f
@@ -141,7 +138,6 @@ class TimelineBar : Element() {
 
     blink = Mathf.lerpDelta(blink, 0f, 0.2f)
     value = Mathf.lerpDelta(value, computed, 0.15f)
-
     val bar = Tex.bar
 
     if (outlineRadius > 0) {
@@ -159,7 +155,6 @@ class TimelineBar : Element() {
     bar.draw(x, y, width, barHeight)
     Draw.color(color, blinkColor, blink)
     Draw.alpha(parentAlpha)
-
     val top = Tex.barTop
     val topWidth = width * value
 
@@ -196,7 +191,6 @@ class TimelineBar : Element() {
     }
 
     Draw.color()
-
     val font = Fonts.outline
     val lay = Pools.obtain(GlyphLayout::class.java, ::GlyphLayout)
 
@@ -232,7 +226,6 @@ open class PonderDialog :
     }
   ) {
   var marginSize = 80f
-
   val view = Table()
   val timelineBar = TimelineBar()
   val style1: ImageButtonStyle =
@@ -273,10 +266,8 @@ open class PonderDialog :
         .get()
         .resizeImage(marginSize)
     }
-
   val drawable = TextureRegionDrawable(TextureRegion())
   val image = Image(drawable)
-
   var display = false
 
   fun load() {
@@ -345,9 +336,7 @@ open class PonderDialog :
           if (lastDisplay == hovered) return@update
           lastDisplay = hovered
           info.clearChildren()
-          if (hovered != null) {
-            hovered.display(info)
-          }
+          hovered?.display(info)
         }
       },
       buttons

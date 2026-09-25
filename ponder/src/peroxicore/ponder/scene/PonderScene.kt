@@ -5,7 +5,6 @@ import arc.scene.style.*
 import arc.scene.ui.layout.*
 import mindustry.*
 import mindustry.ctype.*
-import mindustry.type.*
 import mindustry.world.*
 
 data class PonderTag(
@@ -37,7 +36,6 @@ open class UnlockableContentPonder(
 ) : PonderScene {
   override val name: String
     get() = "${content.localizedName}  ${content.ponderType()}"
-
   override val icon: Drawable
     get() = TextureRegionDrawable(content.fullIcon)
 

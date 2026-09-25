@@ -1,9 +1,8 @@
-import java.util.Properties
+import java.util.*
 
 plugins {
   `kotlin-dsl`
 }
-
 val props = Properties()
 file("../gradle.properties").inputStream().use { props.load(it) }
 val kotlinVersion = props.getProperty("kotlinVersion")

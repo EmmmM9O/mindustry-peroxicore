@@ -1,6 +1,5 @@
 package peroxicore.generator
 
-import com.google.devtools.ksp.*
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
 import peroxicore.*
@@ -14,4 +13,3 @@ abstract class BaseGenerator {
 
   abstract fun process(resolver: Resolver): List<KSAnnotated>
 }
-

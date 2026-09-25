@@ -6,12 +6,11 @@ import arc.graphics.g2d.*
 import arc.graphics.gl.*
 import mindustry.*
 import mindustry.core.*
-import mindustry.game.*
 import mindustry.game.EventType.*
 import mindustry.graphics.*
 import peroxicore.ponder.*
 import peroxicore.ponder.world.*
-import peroxicore.utils.handler.*
+import peroxicore.util.handler.*
 import universe.util.reflect.*
 
 class DefaultOverlayRenderer : OverlayRenderer() {
@@ -35,21 +34,15 @@ var Renderer.overlays_: OverlayRenderer by accessField("overlays")
 
 class OriginPonderRenderer : PonderRenderer {
   lateinit var buffer: FrameBuffer
-
   lateinit var blocks: BlockRenderer
   lateinit var originBlocks: BlockRenderer
-
   override val camera = Camera()
   lateinit var originCamera: Camera
-
   lateinit var originOverlays: OverlayRenderer
   lateinit var overlays: OverlayRenderer
-
   var originShown = false
-
   override val texture: Texture
     get() = buffer.texture
-
   val size: Float
     get() =
       if (Core.graphics.width > Core.graphics.height) {
@@ -57,7 +50,6 @@ class OriginPonderRenderer : PonderRenderer {
       } else {
         Core.graphics.width * 0.8f
       }
-
   val resolution
     get() =
       scaleToMax(
@@ -92,7 +84,7 @@ class OriginPonderRenderer : PonderRenderer {
       tc.get(PonderTile.oriTileChange.set(event.tile))
     }
 
-    Events.run(EventType.Trigger.draw) {
+    Events.run(Trigger.draw) {
       if (!PonderCore.rendering) return@run
       Draw.draw(Layer.end) {
         buffer.end()
@@ -107,9 +99,7 @@ class OriginPonderRenderer : PonderRenderer {
     }
     buffer.begin(Color.clear)
     // ScreenSampler.enable = false
-
     Vars.renderer.draw()
-
     // ScreenSampler.enable = true
   }
 

@@ -20,11 +20,9 @@ import peroxicore.ponder.render.*
 import peroxicore.ponder.scene.*
 import peroxicore.ponder.ui.*
 import universe.util.reflect.*
-import kotlin.Unit
+
 // import peroxicore.struct.AttachedProperty
-
 // var Player.pondering: Boolean by AttachedProperty { false }
-
 var Net.active by accessBoolean("active")
 var Player.unit_: mindustry.gen.Unit? by accessField("unit")
 
@@ -75,53 +73,36 @@ object PonderCore : ApplicationListener, TimelineContext {
   lateinit var originIndexer: BlockIndexer
   var indexer = PonderBlockIndexer()
   lateinit var originTiles: Tiles
-
   lateinit var ponder: PonderDialog
-
   var sceneEnd = false
   var rendering = false
-
   var renderer: PonderRenderer = OriginPonderRenderer()
   override var input: PonderInput = DefaultPonderInput()
-
   override var tiles: Tiles = Vars.world.tiles
   override var currentTick = 0f
-
   override var speed = 1f
-
   override val team: Team
     get() = Vars.player?.team() ?: Team.sharded
-
   val state =
     GameState().apply {
       rules.infiniteResources = true
       rules.disableUnitCap = true
     }
   lateinit var originState: GameState
-
   var originDelta = 1f
   var originActive = false
-
   val tasks = Seq<PonderTask>()
   val freeTasks = IntQueue()
-
   var ponderer: mindustry.gen.Unit? = null
   var originUnit: mindustry.gen.Unit? = null
   override val builder by this::ponderer
-
   override val camera by renderer::camera
-
   override val camRect by input::camRect
-
   override var camSpeed by input::camSpeed
-
   override var camControl by input::camControl
-
   override val ratio
     get() = tiles.width.toFloat() / tiles.height
-
   override var isBuilding by input::camControl
-
   val view
     get() = ponder.image
 
@@ -139,7 +120,8 @@ object PonderCore : ApplicationListener, TimelineContext {
   override fun resize(
     width: Int,
     height: Int,
-  ) {}
+  ) {
+  }
 
   override fun pause() {}
 

@@ -3,16 +3,14 @@ package peroxicore.ponder
 import arc.*
 import arc.func.*
 import mindustry.ai.*
-import mindustry.game.*
 import mindustry.game.EventType.*
 import peroxicore.ponder.world.*
-import peroxicore.utils.handler.*
+import peroxicore.util.handler.*
 
 class PonderBlockIndexer : BlockIndexer() {
-  val worldLoad: Cons<WorldLoadEvent>
+  val worldLoad: Cons<WorldLoadEvent> = EventsHandler.removeLast<WorldLoadEvent>()!!
 
   init {
-    worldLoad = EventsHandler.removeLast<WorldLoadEvent>()!!
     val pre = EventsHandler.removeLast<TilePreChangeEvent>()!!
     val change = EventsHandler.removeLast<TileChangeEvent>()!!
     val floor = EventsHandler.removeLast<TileFloorChangeEvent>()!!

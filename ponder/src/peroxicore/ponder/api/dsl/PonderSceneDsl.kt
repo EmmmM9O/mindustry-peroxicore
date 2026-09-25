@@ -3,7 +3,8 @@ package peroxicore.ponder.api.dsl
 import mindustry.ctype.*
 import peroxicore.ponder.scene.*
 
-@DslMarker annotation class PonderDslMarker
+@DslMarker
+annotation class PonderDslMarker
 
 inline fun UnlockableContent.scene(block: UnlockableContentPonderScope.() -> Unit) =
   UnlockableContentPonderScope(this).apply(block).build()

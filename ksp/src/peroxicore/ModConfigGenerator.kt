@@ -2,11 +2,9 @@ package peroxicore
 
 import arc.util.serialization.*
 import com.google.auto.service.*
-import com.google.devtools.ksp.*
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
 import peroxicore.annotations.*
-import peroxicore.generator.*
 
 data class ModConfigMeta(
   var name: String?,
@@ -69,9 +67,11 @@ class ModConfigProcessor(
     }
     if (symbols.size != 1) {
       logger.warn(
-        "Find too more @ModConfig.We will only take the first.\nNumber: ${symbols.size}\n${symbols.joinToString(
-          separator = "\n"
-        ){ it.locate() }}"
+        "Find too more @ModConfig.We will only take the first.\nNumber: ${symbols.size}\n${
+          symbols.joinToString(
+            separator = "\n"
+          ) { it.locate() }
+        }"
       )
     }
     val mod = symbols.first() as KSClassDeclaration
@@ -103,23 +103,18 @@ class ModConfigProcessor(
   val modVersion by lazy {
     options.getOrDefault(KspOptions.modVersion, "")
   }
-
   val modSubtitle by lazy {
     options.getOrDefault(KspOptions.modSubtitle, "")
   }
-
   val modAuthor by lazy {
     options.getOrDefault(KspOptions.modAuthor, "")
   }
-
   val minGameVersion by lazy {
     options.getOrDefault(KspOptions.minGameVersion, "")
   }
-
   val modRepo by lazy {
     options.getOrDefault(KspOptions.modRepo, "")
   }
-
   val modHidden by lazy {
     options.getOrDefault(KspOptions.modHidden, "")
   }

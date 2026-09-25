@@ -1,14 +1,11 @@
 package peroxicore.mod
 
 import arc.struct.*
-import arc.util.*
-import peroxicore.util.*
 
 class POCModClassLoader(
   parent: ClassLoader,
 ) : ClassLoader(parent) {
   private val children = Seq<ClassLoader>()
-
   private val inChild = ThreadLocal.withInitial { false }
 
   fun addChild(child: ClassLoader) {
@@ -31,8 +28,8 @@ class POCModClassLoader(
             parent.loadClass(name)
           }
       }
-  // }
 
+  // }
   @Throws(ClassNotFoundException::class)
   override fun findClass(name: String): Class<*> {
     // a child may try to delegate class loading to its parent, which is *this class loader* - do not let that happen
@@ -40,12 +37,9 @@ class POCModClassLoader(
       inChild.set(false)
       throw ClassNotFoundException(name)
     }
-
 //    Log.info("Load $name ${getCurrentLocation()}")
-
     var last: ClassNotFoundException? = null
     val size = children.size
-
     // if it doesn't exist in the main class loader, try all the children
     for (i in 0 until size) {
       try {

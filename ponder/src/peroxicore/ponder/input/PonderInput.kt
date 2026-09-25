@@ -8,13 +8,10 @@ import peroxicore.ponder.*
 interface PonderInput {
   val camera
     get() = PonderCore.camera
-
   val camRect: Rect
   var camSpeed: Float
   var camControl: Boolean
-
   var active: Boolean
-
   var isBuilding: Boolean
 
   fun setup()

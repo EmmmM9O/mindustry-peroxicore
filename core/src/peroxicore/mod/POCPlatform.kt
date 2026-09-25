@@ -1,23 +1,14 @@
 package peroxicore.mod
 
-import arc.*
 import arc.files.*
-import arc.math.*
 import arc.struct.*
-import arc.util.serialization.*
-import mindustry.*
 import mindustry.core.*
-import mindustry.mod.*
-import mindustry.net.*
-import mindustry.net.Net.*
 import mindustry.type.*
-import mindustry.ui.FileChooser.*
-import peroxicore.util.*
-import java.net.*
+import mindustry.ui.FileChooser.FileChooserParams
 
 class POCPlatform(
   val platform: Platform,
-  val core: ClassLoader,
+  core: ClassLoader,
 ) : Platform by platform {
   val coreLoader = POCModClassLoader(core)
 
@@ -47,7 +38,7 @@ class POCPlatform(
 
   override fun openWorkshop() = platform.openWorkshop()
 
-  override fun getNet() = platform.getNet()
+  override fun getNet() = platform.net
 
   override fun createScripts() = platform.createScripts()
 

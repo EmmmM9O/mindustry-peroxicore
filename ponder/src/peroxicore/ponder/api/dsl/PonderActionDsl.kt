@@ -12,15 +12,15 @@ import mindustry.graphics.*
 import mindustry.world.*
 import mindustry.world.blocks.*
 import mindustry.world.blocks.environment.*
+import peroxicore.annotations.*
 import peroxicore.ponder.*
 import peroxicore.ponder.api.dsl.PositionScope.*
 import peroxicore.ponder.scene.*
 import peroxicore.ponder.ui.*
-import kotlin.Unit
 
 @PonderDslMarker
 open class WorldPonderActionScope(
-  var context: TimelineContext,
+  val context: TimelineContext,
 ) : TimelineContext by context,
   PositionScope {
   inline fun tiles(crossinline action: Tiles.() -> Unit) {
@@ -149,10 +149,11 @@ open class WorldPonderActionScope(
     duration: Float = 30f,
     team: Team? = null,
     config: Any? = null,
-  ) = PointSpec<Promise<WorldPonderActionScope, Building?>> {
+  ) = PointAction {
     this.build(block, rotation, duration, team, config)
   }
 
+  @ToAction
   fun Point.build(
     block: Block,
     rotation: Int = 0,

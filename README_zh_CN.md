@@ -20,19 +20,19 @@ PeroxiCore —— 领航 Mindustry 模组开发的 Kotlin 先锋。以强悍之�
 
 ## 模块
 
-| 模块 | 说明 |
-| --- | --- |
-| `annotations` | 实用用户的注解集合 |
-| `ksp` | KSP 处理器。 |
-| `compiler-plugin` | K2 编译器插件（FIR + IR）。 |
-| `core` | Core 模块。 |
-| `ponder` | [Ponder](https://create.fandom.com/wiki/Ponder) 风格的游戏内场景：用声明式 DSL 在运行的游戏中搭建并讲解方块。 |
+| 模块              | 说明                                                                                                          |
+|-------------------|---------------------------------------------------------------------------------------------------------------|
+| `annotations`     | 实用用户的注解集合                                                                                            |
+| `ksp`             | KSP 处理器。                                                                                                  |
+| `compiler-plugin` | K2 编译器插件（FIR + IR）。                                                                                   |
+| `core`            | Core 模块。                                                                                                   |
+| `ponder`          | [Ponder](https://create.fandom.com/wiki/Ponder) 风格的游戏内场景：用声明式 DSL 在运行的游戏中搭建并讲解方块。 |
 
 ### 计划中
 
-| 模块 | 说明 |
-| --- | --- |
-| `lwjgl` | LWJGL 模块。 |
+| 模块       | 说明                                        |
+|------------|---------------------------------------------|
+| `lwjgl`    | LWJGL 模块。                                |
 | `graphics` | 构建在 `lwjgl` 之上的高层图形与着色器抽象。 |
 
 ---
@@ -54,15 +54,13 @@ repositories {
 
 ```kotlin
 dependencies {
-  compileOnly("com.github.emmmM9O.mindustry-peroxicore:core:main-SNAPSHOT")
-  compileOnly("com.github.emmmM9O.mindustry-peroxicore:ponder:main-SNAPSHOT")
-
-  // 仅编译期
-  ksp("com.github.emmmM9O.mindustry-peroxicore:ksp:main-SNAPSHOT")
-  kotlinCompilerPluginClasspath("com.github.emmmM9O.mindustry-peroxicore:compiler-plugin:main-SNAPSHOT")
+    compileOnly("com.github.emmmM9O.mindustry-peroxicore:core:main-SNAPSHOT")
+    compileOnly("com.github.emmmM9O.mindustry-peroxicore:ponder:main-SNAPSHOT")
+    // 仅编译期
+    ksp("com.github.emmmM9O.mindustry-peroxicore:ksp:main-SNAPSHOT")
+    kotlinCompilerPluginClasspath("com.github.emmmM9O.mindustry-peroxicore:compiler-plugin:main-SNAPSHOT")
 }
 ```
-
 
 ### 2. 声明模组
 
@@ -71,22 +69,23 @@ dependencies {
 
 ```kotlin
 @ModConfig(
-  name = "mycore",
-  displayName = "My Core",
-  author = "You",
-  description = "A PeroxiCore-based mod",
+    name = "mycore",
+    displayName = "My Core",
+    author = "You",
+    description = "A PeroxiCore-based mod",
 )
 class MyMod : Mod() {
-  override fun init() {}
+    override fun init() {}
 
-  override fun loadContent() {}
+    override fun loadContent() {}
 }
 ```
 
 ### 3. 启用隔离类加载器
 
 在模组类上加 `@ImportPeroxiCore`，会生成一个 `peroxicore.json` 标记。游戏加载带该标记的模组时，
-`PXCPlatform` 会给它一个隔离类加载器，优先加载peroxide里面加载的类，而不是沿用调用方的 parent。
+`PXCPlatform` 会给它一个隔离类加载器，优先加载peroxide里面加载的类，而不是沿用调用方的
+parent。
 
 ```kotlin
 @ModConfig(name = "mycore")
@@ -100,26 +99,26 @@ class MyMod : Mod()
 
 ```kotlin
 Blocks.electrolyzer.register {
-  keyframes {
-    speed(1f)
-    world(13, 11) {
-      fillFloor(Blocks.rhyolite)
-      (4 at 3).around3().fill(Blocks.rhyoliteVent)
-      (8 at 5).focus(5)
+    keyframes {
+        speed(1f)
+        world(13, 11) {
+            fillFloor(Blocks.rhyolite)
+            (4 at 3).around3().fill(Blocks.rhyoliteVent)
+            (8 at 5).focus(5)
+        }
+        frame(50f) {
+            (8 at 5).build(Blocks.electrolyzer)
+            (9 at 5).label("电解机", 4f)
+        }
+        frame(200f) {
+            (4 at 3).focus(5)
+            (4 at 3).build(Blocks.ventCondenser).thenChain {
+                (4 at 7).build(Blocks.turbineCondenser)
+            }.thenChain {
+                (4 at 5).build(Blocks.beamNode)
+            }
+        }
     }
-    frame(50f) {
-      (8 at 5).build(Blocks.electrolyzer)
-      (9 at 5).label("电解机", 4f)
-    }
-    frame(200f) {
-      (4 at 3).focus(5)
-      (4 at 3).build(Blocks.ventCondenser).thenChain {
-        (4 at 7).build(Blocks.turbineCondenser)
-      }.thenChain {
-        (4 at 5).build(Blocks.beamNode)
-      }
-    }
-  }
 }
 ```
 

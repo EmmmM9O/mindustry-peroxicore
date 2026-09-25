@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package peroxicore.ponder.api.dsl
 
 class Promise<R : Any, T> {

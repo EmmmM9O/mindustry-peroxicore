@@ -1,4 +1,4 @@
-package peroxicore.complier.ir
+package peroxicore.compiler.ir
 
 import org.jetbrains.kotlin.backend.common.extensions.*
 import org.jetbrains.kotlin.ir.*
@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.visitors.*
 import org.jetbrains.kotlin.name.*
-import peroxicore.complier.*
+import peroxicore.compiler.*
 
 class POFuncScanner(
   val annotation: ClassId,

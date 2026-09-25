@@ -1,4 +1,4 @@
-package peroxicore.complier.ir
+package peroxicore.compiler.ir
 
 import org.jetbrains.kotlin.backend.common.extensions.*
 import org.jetbrains.kotlin.backend.common.lower.*
@@ -6,14 +6,14 @@ import org.jetbrains.kotlin.cli.common.messages.*
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.ir.builders.*
 import org.jetbrains.kotlin.ir.declarations.*
-import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin.*
+import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin.GeneratedByPlugin
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.symbols.*
 import org.jetbrains.kotlin.ir.types.*
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.ir.visitors.*
 import org.jetbrains.kotlin.js.resolve.diagnostics.*
-import peroxicore.complier.*
+import peroxicore.compiler.*
 
 typealias FunctionInfo = Pair<IrSimpleFunction, IrAnnotation>
 
@@ -30,7 +30,6 @@ class POIrGenerationExtension(
       moduleFragment.reportError("Could not find class <$annotation>")
       return
     }
-
     val implEntries = mutableListOf<IrClass>()
     val methodEntry = mutableMapOf<IrSimpleFunction, IrAnnotation>()
     val plans =
@@ -42,7 +41,6 @@ class POIrGenerationExtension(
     moduleFragment.acceptChildrenVoid(
       POFuncScanner(Annotations.MethodEntry, methodEntry, pluginContext)
     )
-
     val comps = methodEntry.keys.mapNotNull { it.parent as? IrClass }
     moduleFragment.acceptChildrenVoid(
       POClassFilter(implEntries, pluginContext) { impl ->
@@ -116,7 +114,7 @@ class POIrGenerationExtension(
                 params.forEachIndexed { index, param ->
                   if (param.isEmpty()) return@forEachIndexed
                   param.toIntOrNull()?.let {
-                    arguments[index + 1] = irGet(implFunc.parameters.get(it))
+                    arguments[index + 1] = irGet(implFunc.parameters[it])
                     return@forEachIndexed
                   }
                   if (param == "super()") {
@@ -186,7 +184,6 @@ class POIrGenerationExtension(
               val compFuncName = compFunc.name.asString()
               val pos = map[AnnoProps.insert]!!.forString()
               val params = map[AnnoProps.params]!!.stringArr()
-              val context = map[AnnoProps.context]!!.stringArr()
               when (pos) {
                 "HEAD" -> {
                   callListHead.add(pair)
@@ -235,13 +232,17 @@ class POIrGenerationExtension(
             }
 
             info(
-              "IR ${if (overrideIr == null) {
-                if (injects.isNotEmpty()) "Inject" else "Fill"
-              } else {
-                "Override"
-              }}: `$implClassName.$implFuncName(${implFunc.typeStr()})` with ${compFuncs.map{
-                "${it.first.name.asString()}(${it.first.typeStr()})"
-              }.joinToString{"`$it`"}}"
+              "IR ${
+                if (overrideIr == null) {
+                  if (injects.isNotEmpty()) "Inject" else "Fill"
+                } else {
+                  "Override"
+                }
+              }: `$implClassName.$implFuncName(${implFunc.typeStr()})` with ${
+                compFuncs.map {
+                  "${it.first.name.asString()}(${it.first.typeStr()})"
+                }.joinToString { "`$it`" }
+              }"
             )
 
             fun IrBlockBodyBuilder.callInjects(superCall: IrExpression): IrExpression =
@@ -282,9 +283,12 @@ class POIrGenerationExtension(
                   superQualifierSymbol = parentC.symbol
                   dispatchReceiver = irGet(implFunc.dispatchReceiverParameter!!)
 
-                  parentF.owner.parameters.zip(implFunc.parameters.map { irGet(it) }).forEach { (index, expr) ->
-                    arguments[index] = expr
-                  }
+                  parentF.owner.parameters
+                    .zip(
+                      implFunc.parameters.map { irGet(it) }
+                    ).forEach { (index, expr) ->
+                      arguments[index] = expr
+                    }
                 }
               if (implFunc.returnType.isUnit()) {
                 addCall(callListHead, null)

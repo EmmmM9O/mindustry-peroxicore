@@ -1,6 +1,6 @@
 @file:Suppress("UNCHECKED_CAST")
 
-package peroxicore.utils.handler
+package peroxicore.util.handler
 
 import arc.*
 import arc.func.*

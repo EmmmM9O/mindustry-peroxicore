@@ -2,11 +2,9 @@ package peroxicore
 
 import arc.util.serialization.*
 import com.google.auto.service.*
-import com.google.devtools.ksp.*
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
 import peroxicore.annotations.*
-import peroxicore.generator.*
 
 data class ImportPeroxiCoreMeta(
   val peroxicoreLoader: Boolean,
@@ -35,9 +33,11 @@ class ImportPeroxiCoreProcessor(
     }
     if (symbols.size != 1) {
       logger.warn(
-        "Find too more @ImportPeroxiCore .We will only take the first.\nNumber: ${symbols.size}\n${symbols.joinToString(
-          separator = "\n"
-        ){ it.locate() }}"
+        "Find too more @ImportPeroxiCore .We will only take the first.\nNumber: ${symbols.size}\n${
+          symbols.joinToString(
+            separator = "\n"
+          ) { it.locate() }
+        }"
       )
     }
     val mod = symbols.first() as KSClassDeclaration

@@ -1,7 +1,6 @@
 package peroxicore.ponder.api
 
 import arc.*
-import arc.math.geom.*
 import arc.struct.*
 import mindustry.content.*
 import mindustry.ctype.*
@@ -80,4 +79,5 @@ fun UnlockableContent.register(block: UnlockableContentPonderScope.() -> Unit) {
   PonderRegistry.contentScenes.put(this, scene(block))
 }
 
-@PonderDslMarker class PonderRegistryScope
+@PonderDslMarker
+class PonderRegistryScope

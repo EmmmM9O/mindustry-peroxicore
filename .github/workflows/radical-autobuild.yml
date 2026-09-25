@@ -10,7 +10,7 @@ on:
         required: true
         default: 'warning'
         type: choice
-        options: [info, warning, debug]
+        options: [ info, warning, debug ]
 
 jobs:
   build:

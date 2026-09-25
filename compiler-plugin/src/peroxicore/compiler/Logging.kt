@@ -1,4 +1,4 @@
-package peroxicore.complier
+package peroxicore.compiler
 
 import org.jetbrains.kotlin.cli.common.messages.*
 import org.jetbrains.kotlin.ir.declarations.*

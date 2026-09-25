@@ -1,4 +1,4 @@
-package peroxicore.complier.ir
+package peroxicore.compiler.ir
 
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.ir.declarations.*
@@ -33,7 +33,6 @@ fun IrClass.superClasses() =
     .map { it.classifier.owner }
     .filterIsInstance<IrClass>()
 
-@OptIn(UnsafeDuringIrConstructionAPI::class)
 fun IrClass.interfaceAncestors(): List<IrClass> =
   superClasses()
     .filter { it.kind == ClassKind.INTERFACE }

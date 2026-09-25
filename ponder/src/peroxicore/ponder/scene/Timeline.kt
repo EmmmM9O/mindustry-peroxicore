@@ -39,21 +39,16 @@ interface TimeMark {
 interface Timeline {
   val context: TimelineContext
     get() = PonderCore
-
   val tiles: Tiles
     get() = context.tiles
-
   val currentTick: Float
     get() = context.currentTick
-
   var duration: Float
   val marks: List<TimeMark>
   var index: Int
-
   var loop: Boolean
     get() = false
     set(value) {}
-
   val speed: Float
     get() = 1f
 

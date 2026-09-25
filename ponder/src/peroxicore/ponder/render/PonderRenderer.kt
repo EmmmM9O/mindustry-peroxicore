@@ -22,6 +22,5 @@ interface PonderRenderer {
   fun endWorld()
 
   val texture: Texture
-
   val camera: Camera
 }

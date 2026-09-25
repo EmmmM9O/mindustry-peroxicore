@@ -4,7 +4,7 @@ import mindustry.*
 import mindustry.mod.*
 import peroxicore.annotations.*
 import peroxicore.mod.*
-import peroxicore.utils.handler.*
+import peroxicore.util.handler.*
 
 @ModConfig(
   name = "peroxicore",

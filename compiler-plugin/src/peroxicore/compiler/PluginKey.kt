@@ -1,4 +1,4 @@
-package peroxicore.complier
+package peroxicore.compiler
 
 import org.jetbrains.kotlin.*
 
@@ -10,4 +10,5 @@ class POPluginKey(
 
 object PluginKeys {
   val methodEntry: GeneratedDeclarationKey = POPluginKey("MethodEntry")
+  val actionable: GeneratedDeclarationKey = POPluginKey("Actionable")
 }

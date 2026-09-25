@@ -1,10 +1,6 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.jetbrains.kotlin.gradle.dsl.*
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.gradle.api.tasks.*
+import com.github.jengelman.gradle.plugins.shadow.tasks.*
+import org.jetbrains.kotlin.gradle.tasks.*
 import java.util.*
-import javax.management.*
 
 Config.rootDir = project.rootDir
 
@@ -31,7 +27,6 @@ plugins {
   id("com.google.devtools.ksp") version Versions.ksp
   id("com.gradleup.shadow") version "9.3.0"
 }
-
 val modVersion = getProperty("modVersion") ?: System.getenv("MOD_VERSION") ?: "0"
 
 subprojects {
@@ -46,6 +41,7 @@ subprojects {
     toolchain {
       languageVersion.set(JavaLanguageVersion.of(25))
     }
+    withSourcesJar()
   }
 
   kotlin {
@@ -129,6 +125,7 @@ subprojects {
     }
 
     register<JavaExec>("d8Compile") {
+      description = "Compile Dex"
       dependsOn("shadowJar")
 
       doFirst {
@@ -139,7 +136,6 @@ subprojects {
 
         classpath(files(r8Jar))
         mainClass.set("com.android.tools.r8.D8")
-
         val argsList = mutableListOf<String>()
         // argsList.add("--lib")
         // argsList.add(File(platformRoot, "android.jar").absolutePath)
@@ -169,6 +165,7 @@ subprojects {
       }
     }
     register<Jar>("deploy") {
+      description = "Build Mod"
       group = "deployment"
       dependsOn("d8Compile")
       duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -194,14 +191,13 @@ subprojects {
 }
 
 tasks.register<Copy>("deployAll") {
+  description = "Deploy all mods"
   group = "deployment"
 
   into(layout.buildDirectory.dir("deploy"))
   duplicatesStrategy = DuplicatesStrategy.INCLUDE
-
   val targetProjects = listOf(":core", ":ponder")
-
-  val deployTasks = targetProjects.map { "${it}:deploy" }
+  val deployTasks = targetProjects.map { "$it:deploy" }
   dependsOn(deployTasks)
   deployTasks.forEach { mustRunAfter(it) }
   targetProjects.forEach {
