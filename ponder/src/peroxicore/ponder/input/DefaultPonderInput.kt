@@ -240,9 +240,23 @@ class DefaultPonderInputHandler(
 
   fun reset() {
     playerPlanTree =
-      QuadTree<BuildPlan>(Rect(0f, 0f, tiles.unitWidth().toFloat(), tiles.unitHeight().toFloat()))
+      QuadTree<BuildPlan>(
+        Rect(
+          0f,
+          0f,
+          tiles.unitWidth().toFloat(),
+          tiles.unitHeight().toFloat()
+        )
+      )
     selectPlanTree =
-      QuadTree<BuildPlan>(Rect(0f, 0f, tiles.unitWidth().toFloat(), tiles.unitHeight().toFloat()))
+      QuadTree<BuildPlan>(
+        Rect(
+          0f,
+          0f,
+          tiles.unitWidth().toFloat(),
+          tiles.unitHeight().toFloat()
+        )
+      )
     createPlanLists()
     needReset = false
   }
@@ -305,7 +319,13 @@ class DefaultPonderInputHandler(
   }
 
   fun world(vec: Vec2) =
-    camera.unproject(vec.set(view.stageToLocalCoordinates(vec)), 0f, 0f, view.width, view.height)
+    camera.unproject(
+      vec.set(view.stageToLocalCoordinates(vec)),
+      0f,
+      0f,
+      view.width,
+      view.height
+    )
 
   fun tileAt(vec: Vec2): Tile? {
     val pos = world(vec)

@@ -41,7 +41,8 @@ class ImportPeroxiCoreProcessor(
       )
     }
     val mod = symbols.first() as KSClassDeclaration
-    val config = mod.annotationNotNull<ImportPeroxiCore>().toPXC().let(ImportPeroxiCoreMeta::parse)
+    val config =
+      mod.annotationNotNull<ImportPeroxiCore>().toPXC().let(ImportPeroxiCoreMeta::parse)
     val data = json.toJson(config)
     if (logConfigs) {
       info("@ImportPeroxiCore  with config\n$data")
@@ -63,5 +64,9 @@ class ImportPeroxiCoreProcessor(
 @AutoService(SymbolProcessorProvider::class)
 class ImportPeroxiCoreProcessorProvider : SymbolProcessorProvider {
   override fun create(environment: SymbolProcessorEnvironment) =
-    ImportPeroxiCoreProcessor(environment.codeGenerator, environment.logger, environment.options)
+    ImportPeroxiCoreProcessor(
+      environment.codeGenerator,
+      environment.logger,
+      environment.options
+    )
 }

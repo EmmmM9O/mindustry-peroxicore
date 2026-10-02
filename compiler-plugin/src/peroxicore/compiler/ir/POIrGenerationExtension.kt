@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.cli.common.messages.*
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.ir.builders.*
 import org.jetbrains.kotlin.ir.declarations.*
-import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin.GeneratedByPlugin
+import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin.*
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.symbols.*
 import org.jetbrains.kotlin.ir.types.*
@@ -34,9 +34,9 @@ class POIrGenerationExtension(
     val methodEntry = mutableMapOf<IrSimpleFunction, IrAnnotation>()
     val plans =
       mutableMapOf<
-        IrClass,
-        MutableList<FunctionInfo>
-      >()
+          IrClass,
+          MutableList<FunctionInfo>
+          >()
 
     moduleFragment.acceptChildrenVoid(
       POFuncScanner(Annotations.MethodEntry, methodEntry, pluginContext)
@@ -64,9 +64,9 @@ class POIrGenerationExtension(
     }
     val todos =
       mutableMapOf<
-        IrSimpleFunction,
-        MutableList<FunctionInfo>
-      >()
+          IrSimpleFunction,
+          MutableList<FunctionInfo>
+          >()
 
     moduleFragment.acceptChildrenVoid(
       EntryMethodScanner(
@@ -81,7 +81,8 @@ class POIrGenerationExtension(
       val implClassName = implClass.classId!!.asSingleFqName().asString()
       val implFuncName = implFunc.name.asString()
       val implParams = implFunc.parameters.associateBy { it.name.asString() }
-      val properties = implClass.properties().associate { it.name.asString() to it.symbol }
+      val properties =
+        implClass.properties().associate { it.name.asString() to it.symbol }
 
       implFunc.body =
         DeclarationIrBuilder(generatorContext = pluginContext, symbol = implFunc.symbol)

@@ -6,4 +6,15 @@ pluginManagement {
 
 rootProject.name = "peroxicore"
 
-include("core", "ponder", "annotations", "ksp", "compiler-plugin")
+include(
+  ":core",
+  ":ponder",
+  ":annotations",
+  ":ksp",
+  ":compiler-plugin",
+  ":lwjgl",
+  ":lwjgl:platform:expects",
+  ":lwjgl:platform:android",
+  ":lwjgl:platform:desktop",
+  ":lwjgl:opus",
+)

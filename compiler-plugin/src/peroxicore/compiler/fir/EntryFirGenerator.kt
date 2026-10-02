@@ -37,13 +37,18 @@ class EntryFirGenerator(
     AnnoMarker.caches
       .map { (anno, symbols) ->
         anno.annotationClass to
-          symbols.map { classSymbol ->
-            classSymbol.classId.asSingleFqName() to
-              anno.annotateds
-                .filter {
-                  it.dispatchReceiverType!!.classId == classSymbol.classId
-                }.map { it to it.getAnnotationByClassId(anno.annotationClass, session)!! }
-          }
+            symbols.map { classSymbol ->
+              classSymbol.classId.asSingleFqName() to
+                  anno.annotateds
+                    .filter {
+                      it.dispatchReceiverType!!.classId == classSymbol.classId
+                    }.map {
+                      it to it.getAnnotationByClassId(
+                        anno.annotationClass,
+                        session
+                      )!!
+                    }
+            }
       }.toMap()
 
   // MutableMap<ClassId, MutableList<Pair<FqName, MutableList<>>>
@@ -56,7 +61,11 @@ class EntryFirGenerator(
       }
 
       is FirJavaTypeRef -> {
-        (resolveIfJavaType(session, JavaTypeParameterStack.EMPTY, null) as FirResolvedTypeRef)
+        (resolveIfJavaType(
+          session,
+          JavaTypeParameterStack.EMPTY,
+          null
+        ) as FirResolvedTypeRef)
           .coneType
       }
 
@@ -85,7 +94,8 @@ class EntryFirGenerator(
   fun FirClass.ancestors(): List<FirClass> =
     parent()?.let { listOf(it, *it.ancestors().toTypedArray()) } ?: emptyList()
 
-  val parentsFuncs = mutableMapOf<FqName, Map<Name, MutableList<FirNamedFunctionSymbol>>>()
+  val parentsFuncs =
+    mutableMapOf<FqName, Map<Name, MutableList<FirNamedFunctionSymbol>>>()
 
   fun FirFunction.isSui(): Boolean {
     val status = this.status
@@ -188,7 +198,14 @@ class EntryFirGenerator(
         if (comps.contains(name)) {
           fcomps.add("`${name.asString()}`")
           functions.forEach {
-            entryProcessors[anno]?.process(name, session, messageCollector, classSymbol, result, it)
+            entryProcessors[anno]?.process(
+              name,
+              session,
+              messageCollector,
+              classSymbol,
+              result,
+              it
+            )
           }
         }
       }
@@ -238,7 +255,10 @@ class EntryFirGenerator(
 
   fun splitPair(input: String): Pair<String, String> {
     val idx = input.indexOf(':')
-    return if (idx == -1) input to "" else input.substring(0, idx) to input.substring(idx + 1)
+    return if (idx == -1) input to "" else input.substring(
+      0,
+      idx
+    ) to input.substring(idx + 1)
   }
 
   val rewriteList = mutableSetOf<String>()
@@ -249,66 +269,68 @@ class EntryFirGenerator(
   fun FirNamedFunctionSymbol.printString() =
     "${dispatchReceiverType!!.classId!!.asString()}.${name.asString()}"
 
-  val funcsToDefine = mutableMapOf<Pair<FqName, Name>, MutableSet<FirNamedFunctionSymbol>>()
+  val funcsToDefine =
+    mutableMapOf<Pair<FqName, Name>, MutableSet<FirNamedFunctionSymbol>>()
   val entryProcessors =
     mutableMapOf(
       Annotations.MethodEntry to
-        EntryProcessor { rorigin, session, messageCollector, classSymbol, result, function ->
-          val (origin, annotation) = function
-          ((annotation as? FirAnnotationCall)?.firstA())?.also { target ->
-            val (name, types) = splitPair(target)
-            val rname = Name.identifier(name)
-            val fqName = classSymbol.classId.asSingleFqName()
-            val thisFuncs =
-              classSymbol.declarationSymbols
-                .filterIsInstance<FirNamedFunctionSymbol>()
-                .possible(name)
-            val thisFuncsTypes = thisFuncs.map { it.typeStr() }
-            val parentFuncs =
-              parentsFuncs[fqName]?.get(rname)?.filter { it.typeStr() !in thisFuncsTypes }
-                ?: emptyList()
-            val allFuncs = mutableListOf<FirNamedFunctionSymbol>()
-            allFuncs.addAll(thisFuncs)
-            allFuncs.addAll(parentFuncs)
-            val func =
-              allFuncs.findFunction(name, types, origin)
-                ?: run {
-                  messageCollector.report(
-                    CompilerMessageSeverity.ERROR,
-                    "@MethodEntry can not find suitable `$name${types.addK()}` in `${fqName.asString()}` for `${origin.printString()}`."
-                  )
-                  allFuncs
-                    .takeIf { it.isNotEmpty() }
-                    ?.let { possibleList ->
-                      messageCollector.report(
-                        CompilerMessageSeverity.ERROR,
-                        "Possible candidates: ${
-                          possibleList.map {
-                            "${it.printString()} Types:`${it.typeStr()}`"
-                          }
-                        }"
-                      )
-                    }
-                  return@also
-                }
+          EntryProcessor { rorigin, session, messageCollector, classSymbol, result, function ->
+            val (origin, annotation) = function
+            ((annotation as? FirAnnotationCall)?.firstA())?.also { target ->
+              val (name, types) = splitPair(target)
+              val rname = Name.identifier(name)
+              val fqName = classSymbol.classId.asSingleFqName()
+              val thisFuncs =
+                classSymbol.declarationSymbols
+                  .filterIsInstance<FirNamedFunctionSymbol>()
+                  .possible(name)
+              val thisFuncsTypes = thisFuncs.map { it.typeStr() }
+              val parentFuncs =
+                parentsFuncs[fqName]?.get(rname)
+                  ?.filter { it.typeStr() !in thisFuncsTypes }
+                  ?: emptyList()
+              val allFuncs = mutableListOf<FirNamedFunctionSymbol>()
+              allFuncs.addAll(thisFuncs)
+              allFuncs.addAll(parentFuncs)
+              val func =
+                allFuncs.findFunction(name, types, origin)
+                  ?: run {
+                    messageCollector.report(
+                      CompilerMessageSeverity.ERROR,
+                      "@MethodEntry can not find suitable `$name${types.addK()}` in `${fqName.asString()}` for `${origin.printString()}`."
+                    )
+                    allFuncs
+                      .takeIf { it.isNotEmpty() }
+                      ?.let { possibleList ->
+                        messageCollector.report(
+                          CompilerMessageSeverity.ERROR,
+                          "Possible candidates: ${
+                            possibleList.map {
+                              "${it.printString()} Types:`${it.typeStr()}`"
+                            }
+                          }"
+                        )
+                      }
+                    return@also
+                  }
 
-            if (thisFuncs.contains(func)) {
-              rewriteList.add("`$name(${func.typeStr()})`")
-            } else {
-              val types = func.typeStr()
-              val resName = Name.identifier(name)
-              result.add(resName)
-              funcsToDefine.getOrPut(fqName to resName) { mutableSetOf() }.add(func)
-              defineList.add("`$name($types)`")
+              if (thisFuncs.contains(func)) {
+                rewriteList.add("`$name(${func.typeStr()})`")
+              } else {
+                val types = func.typeStr()
+                val resName = Name.identifier(name)
+                result.add(resName)
+                funcsToDefine.getOrPut(fqName to resName) { mutableSetOf() }.add(func)
+                defineList.add("`$name($types)`")
+              }
             }
+              ?: run {
+                messageCollector.report(
+                  CompilerMessageSeverity.ERROR,
+                  "@MethodEntry without arguement"
+                )
+              }
           }
-            ?: run {
-              messageCollector.report(
-                CompilerMessageSeverity.ERROR,
-                "@MethodEntry without arguement"
-              )
-            }
-        }
     )
 
   override fun generateFunctions(

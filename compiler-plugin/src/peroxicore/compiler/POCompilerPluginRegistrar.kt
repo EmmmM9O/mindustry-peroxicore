@@ -20,7 +20,11 @@ class POCompilerPluginRegistrar : CompilerPluginRegistrar() {
   override fun ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
     val messageCollector =
       configuration[CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE]
-    FirExtensionRegistrarAdapter.registerExtension(POFirExtensionRegistrar(messageCollector))
+    FirExtensionRegistrarAdapter.registerExtension(
+      POFirExtensionRegistrar(
+        messageCollector
+      )
+    )
     IrGenerationExtension.registerExtension(POIrGenerationExtension(messageCollector))
   }
 }

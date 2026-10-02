@@ -11,7 +11,8 @@ value class PXCAnnotatin(
   }
 }
 
-fun Pair<KSAnnotated?, KSAnnotation?>.toPXC() = second?.let(::PXCAnnotatin) ?: PXCAnnotatin.empty
+fun Pair<KSAnnotated?, KSAnnotation?>.toPXC() =
+  second?.let(::PXCAnnotatin) ?: PXCAnnotatin.empty
 
 fun KSAnnotation.toPXC() = PXCAnnotatin(this)
 
@@ -19,13 +20,16 @@ inline fun <reified T, R> PXCAnnotatin.valueOp(
   fieldName: String,
   default: R,
   supplier: (T) -> R,
-) = (annotation?.arguments?.find { it.name?.asString() == fieldName }?.value as? T)?.let(supplier)
+) = (annotation?.arguments?.find { it.name?.asString() == fieldName }?.value as? T)?.let(
+  supplier
+)
   ?: default
 
 inline fun <reified T> PXCAnnotatin.value(
   fieldName: String,
   default: T,
-) = annotation?.arguments?.find { it.name?.asString() == fieldName }?.value as? T ?: default
+) =
+  annotation?.arguments?.find { it.name?.asString() == fieldName }?.value as? T ?: default
 
 inline fun <reified T> PXCAnnotatin.valueNull(fieldName: String): T? =
   annotation?.arguments?.find { it.name?.asString() == fieldName }?.value as? T
@@ -55,4 +59,7 @@ fun PXCAnnotatin.stringArr(
 inline fun <R> PXCAnnotatin.valueParse(
   fieldName: String,
   parser: (PXCAnnotatin) -> R,
-) = valueOp<KSAnnotation, PXCAnnotatin>(fieldName, PXCAnnotatin.empty, ::PXCAnnotatin).let(parser)
+) =
+  valueOp<KSAnnotation, PXCAnnotatin>(fieldName, PXCAnnotatin.empty, ::PXCAnnotatin).let(
+    parser
+  )

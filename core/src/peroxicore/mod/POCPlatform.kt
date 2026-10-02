@@ -4,7 +4,7 @@ import arc.files.*
 import arc.struct.*
 import mindustry.core.*
 import mindustry.type.*
-import mindustry.ui.FileChooser.FileChooserParams
+import mindustry.ui.FileChooser.*
 
 class POCPlatform(
   val platform: Platform,
@@ -50,7 +50,8 @@ class POCPlatform(
 
   override fun shareFile(file: Fi) = platform.shareFile(file)
 
-  override fun showFileChooser(params: FileChooserParams) = platform.showFileChooser(params)
+  override fun showFileChooser(params: FileChooserParams) =
+    platform.showFileChooser(params)
 
   override fun hide() = platform.hide()
 

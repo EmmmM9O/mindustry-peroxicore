@@ -14,8 +14,7 @@
 
 [English](README.md) | **中文**
 
-PeroxiCore —— 领航 Mindustry 模组开发的 Kotlin 先锋。以强悍之力拓界，让每一分想象力直抵星辰。
-
+PeroxiCore —— 领航 Mindustry 模组开发的 Kotlin 先锋。
 ---
 
 ## 模块
@@ -69,15 +68,15 @@ dependencies {
 
 ```kotlin
 @ModConfig(
-    name = "mycore",
-    displayName = "My Core",
-    author = "You",
-    description = "A PeroxiCore-based mod",
+  name = "mycore",
+  displayName = "My Core",
+  author = "You",
+  description = "A PeroxiCore-based mod",
 )
 class MyMod : Mod() {
-    override fun init() {}
+  override fun init() {}
 
-    override fun loadContent() {}
+  override fun loadContent() {}
 }
 ```
 

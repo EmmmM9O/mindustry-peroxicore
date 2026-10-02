@@ -10,7 +10,7 @@ import arc.scene.*
 import arc.scene.event.*
 import arc.scene.style.*
 import arc.scene.ui.*
-import arc.scene.ui.ImageButton.ImageButtonStyle
+import arc.scene.ui.ImageButton.*
 import arc.scene.ui.layout.*
 import arc.util.pooling.*
 import mindustry.*
@@ -176,7 +176,12 @@ class TimelineBar : Element() {
         timelineBack.draw(x + dx - tickWidth / 2f, y, tickWidth, barHeight)
         timelineBack.draw(x + dx - iconWidth / 2f, y + barHeight, iconWidth, tickOver)
         it.icon?.let { icon ->
-          timelineBack.draw(x + dx - fullWidth / 2f, y + barHeight + tickOver, fullWidth, fullWidth)
+          timelineBack.draw(
+            x + dx - fullWidth / 2f,
+            y + barHeight + tickOver,
+            fullWidth,
+            fullWidth
+          )
         }
       }
     }
@@ -186,7 +191,12 @@ class TimelineBar : Element() {
     timeline?.apply {
       marks.forEach {
         val dx = width * it.tick / duration
-        it.icon?.draw(x + dx - fullWidth / 2f, y + barHeight + tickOver, fullWidth, fullWidth)
+        it.icon?.draw(
+          x + dx - fullWidth / 2f,
+          y + barHeight + tickOver,
+          fullWidth,
+          fullWidth
+        )
       }
     }
 
@@ -357,7 +367,11 @@ open class PonderDialog :
     val gh = Core.graphics.height
     val size = if (gw > gh) gh * 0.7f else gw * 0.8f
     val (w, h) =
-      scaleToMax(PonderCore.tiles.width.toFloat(), PonderCore.tiles.height.toFloat(), size)
+      scaleToMax(
+        PonderCore.tiles.width.toFloat(),
+        PonderCore.tiles.height.toFloat(),
+        size
+      )
     view.add(image).size(w, h)
   }
 

@@ -25,7 +25,7 @@ class POFuncScanner(
       is IrDeclaration,
       is IrFile,
       is IrModuleFragment,
-      -> element.acceptChildrenVoid(this)
+        -> element.acceptChildrenVoid(this)
 
       else -> Unit
     }
@@ -49,7 +49,7 @@ class POClassScanner(
       is IrDeclaration,
       is IrFile,
       is IrModuleFragment,
-      -> element.acceptChildrenVoid(this)
+        -> element.acceptChildrenVoid(this)
 
       else -> Unit
     }
@@ -71,7 +71,7 @@ class POClassFilter(
       is IrDeclaration,
       is IrFile,
       is IrModuleFragment,
-      -> element.acceptChildrenVoid(this)
+        -> element.acceptChildrenVoid(this)
 
       else -> Unit
     }
@@ -80,16 +80,17 @@ class POClassFilter(
 
 class EntryMethodScanner(
   val plans: Map<
-    IrClass,
-    MutableList<Pair<IrSimpleFunction, IrAnnotation>>
-  >,
+      IrClass,
+      MutableList<Pair<IrSimpleFunction, IrAnnotation>>
+      >,
   val todos: MutableMap<
-    IrSimpleFunction,
-    MutableList<Pair<IrSimpleFunction, IrAnnotation>>
-  >,
+      IrSimpleFunction,
+      MutableList<Pair<IrSimpleFunction, IrAnnotation>>
+      >,
   val context: IrPluginContext,
 ) : IrVisitorVoid() {
-  fun List<IrSimpleFunction>.possible(method: String) = filter { it.name.asString() == method }
+  fun List<IrSimpleFunction>.possible(method: String) =
+    filter { it.name.asString() == method }
 
   fun List<IrSimpleFunction>.findFunction(
     method: String,
@@ -127,7 +128,7 @@ class EntryMethodScanner(
       is IrDeclaration,
       is IrFile,
       is IrModuleFragment,
-      -> element.acceptChildrenVoid(this)
+        -> element.acceptChildrenVoid(this)
 
       else -> Unit
     }

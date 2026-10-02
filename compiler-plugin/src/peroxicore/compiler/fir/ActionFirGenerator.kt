@@ -76,9 +76,9 @@ class ActionFirGenerator(
       owner.fir.declarations
         .firstOrNull {
           it.name() == targetName &&
-            it.poHas(
-              Annotations.Actionable
-            )
+              it.poHas(
+                Annotations.Actionable
+              )
         }
         ?: return null
     val targetClassSymbol =

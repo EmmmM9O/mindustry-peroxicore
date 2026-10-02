@@ -22,15 +22,18 @@ abstract class BaseProcessor(
   inline fun <reified T> Resolver.annotations() =
     symbols<T>(false).first.map {
       it.annotation<T>()
-        ?: fail("Cannot find ${T::class.qualifiedName}.But in theory, it should exist.", it)
+        ?: fail(
+          "Cannot find ${T::class.qualifiedName}.But in theory, it should exist.",
+          it
+        )
     }
 
   inline fun <reified T> Resolver.annotationPairs() =
     symbols<T>(false).first.map {
       it to
-        (
-          it.annotationNotNull<T>()
-        )
+          (
+              it.annotationNotNull<T>()
+              )
     }
 
   fun KSAnnotated.annotationName(qualifiedName: String) =
@@ -41,11 +44,15 @@ abstract class BaseProcessor(
         ?.asString() == qualifiedName
     }
 
-  inline fun <reified T> KSAnnotated.annotation() = annotationName(T::class.qualifiedName!!)
+  inline fun <reified T> KSAnnotated.annotation() =
+    annotationName(T::class.qualifiedName!!)
 
   inline fun <reified T> KSAnnotated.annotationNotNull() =
     annotation<T>()
-      ?: fail("Cannot find ${T::class.qualifiedName}.But in theory, it should exist.", this)
+      ?: fail(
+        "Cannot find ${T::class.qualifiedName}.But in theory, it should exist.",
+        this
+      )
 
   fun KSAnnotated.locate() = location.toString().let { " at $it" }
 

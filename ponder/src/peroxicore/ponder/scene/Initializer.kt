@@ -13,7 +13,11 @@ interface TimelineInitializer {
 interface InitializerComp {
   val initializer: TimelineInitializer
 
-  @MethodEntry(entryMethod = "create", context = ["context"], insert = InsertPosition.HEAD)
+  @MethodEntry(
+    entryMethod = "create",
+    context = ["context"],
+    insert = InsertPosition.HEAD
+  )
   fun callCreate(context: TimelineContext) {
     context.tiles = initializer.create(context)
   }
@@ -29,7 +33,8 @@ open class BaseTimelineInitializer(
   val height: Int,
   private val initBlock: TimelineContext.() -> Unit,
 ) : TimelineInitializer {
-  override fun create(context: TimelineContext) = Tiles(width, height).apply(Tiles::fillPonder)
+  override fun create(context: TimelineContext) =
+    Tiles(width, height).apply(Tiles::fillPonder)
 
   override fun init(context: TimelineContext) {
     context.apply(initBlock)

@@ -113,7 +113,11 @@ open class WorldPonderActionScope(
   fun Point.placeEffect(size: Int = -1) {
     if (jump) return
     tiles.get(x, y)?.build?.also {
-      it.block.placeEffect.at(it.x, it.y, (if (size == -1) it.block.size else size).toFloat())
+      it.block.placeEffect.at(
+        it.x,
+        it.y,
+        (if (size == -1) it.block.size else size).toFloat()
+      )
     }
       ?: run {
         val rsize = if (size == -1) 1 else size
@@ -139,7 +143,17 @@ open class WorldPonderActionScope(
     config: Any? = null,
   ) {
     if (input.validPlace(x, y, block, rotation)) {
-      builder?.also { it.plans.add(BuildPlan(x, y, rotation, block, config ?: block.nextConfig())) }
+      builder?.also {
+        it.plans.add(
+          BuildPlan(
+            x,
+            y,
+            rotation,
+            block,
+            config ?: block.nextConfig()
+          )
+        )
+      }
     }
   }
 

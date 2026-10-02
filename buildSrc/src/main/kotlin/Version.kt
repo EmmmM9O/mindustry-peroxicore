@@ -30,15 +30,22 @@ object Versions {
   const val ksp = "2.3.10"
   val kotlin by lazy { Config.get("kotlinVersion") }
   const val mindustry = "v160.4"
+  const val lwjgl = "3.4.3"
 }
 
 object Library {
   const val kspApi = "com.google.devtools.ksp:symbol-processing-api:${Versions.ksp}"
   const val autoServiceAnno =
     "com.google.auto.service:auto-service-annotations:${Versions.autoServiceAnno}"
-  const val autoServiceKsp = "dev.zacsweers.autoservice:auto-service-ksp:${Versions.autoServiceKsp}"
+  const val autoServiceKsp =
+    "dev.zacsweers.autoservice:auto-service-ksp:${Versions.autoServiceKsp}"
   const val kotlinpoet = "com.squareup:kotlinpoet:${Versions.kotlinpoet}"
   const val kotlinpoetKsp = "com.squareup:kotlinpoet-ksp:${Versions.kotlinpoet}"
   val compiler = "org.jetbrains.kotlin:kotlin-compiler-embeddable:${Versions.kotlin}"
   const val mindustry = "Anuken:Mindustry:${Versions.mindustry}"
+  const val lwjgl = "org.lwjgl:lwjgl:${Versions.lwjgl}"
+  const val lwjglCore = "org.lwjgl:lwjgl"
+  const val lwjglBom = "org.lwjgl:lwjgl-bom:${Versions.lwjgl}"
+  fun lwjglModule(name: String) = "org.lwjgl:lwjgl-$name"
+  fun lwjglVersion(name: String) = "org.lwjgl:lwjgl-$name:${Versions.lwjgl}"
 }

@@ -25,7 +25,6 @@ plugins {
   idea
   kotlin("jvm")
   id("com.google.devtools.ksp") version Versions.ksp
-  id("com.gradleup.shadow") version "9.3.0"
 }
 val modVersion = getProperty("modVersion") ?: System.getenv("MOD_VERSION") ?: "0"
 
@@ -51,6 +50,9 @@ subprojects {
         kotlin.srcDirs("src")
         kotlin.srcDirs("build/generated/ksp/main/kotlin")
       }
+      getByName("test") {
+        kotlin.srcDirs("test")
+      }
     }
   }
 
@@ -68,8 +70,8 @@ subprojects {
       //      sourceDirs = sourceDirs + file("build/generated/ksp/main/kotlin")
       generatedSourceDirs =
         generatedSourceDirs +
-        file("build/generated/ksp/main/kotlin") +
-        file("build/generated/ksp/test/kotlin")
+            file("build/generated/ksp/main/kotlin") +
+            file("build/generated/ksp/test/kotlin")
     }
   }
   repositories {
@@ -89,6 +91,10 @@ subprojects {
   dependencies {
     compileOnly(kotlin("stdlib-jdk8"))
     compileOnly("com.android.tools:r8:9.1.31")
+
+    testImplementation(kotlin("stdlib-jdk8"))
+    testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.3")
   }
   tasks {
     test {
@@ -120,7 +126,7 @@ subprojects {
     }
 
     withType<ShadowJar> {
-      archiveFileName.set("${project.packageName()}-desktop.jar")
+      archiveFileName.set("${project.packageName()}-origin.jar")
       from("assets/") { include("**") }
     }
 
@@ -153,8 +159,8 @@ subprojects {
         argsList.add("--min-api")
         argsList.add("26")
         argsList.add("--output")
-        argsList.add("${project.packageName()}-android.jar")
-        argsList.add("${project.packageName()}-desktop.jar")
+        argsList.add("${project.packageName()}-dex.jar")
+        argsList.add("${project.packageName()}-origin.jar")
 
         args = argsList
         workingDir =
@@ -171,8 +177,8 @@ subprojects {
       duplicatesStrategy = DuplicatesStrategy.EXCLUDE
       archiveFileName.set("${project.packageName()}.jar")
       from(
-        zipTree("${layout.buildDirectory.get()}/libs/${project.packageName()}-desktop.jar"),
-        zipTree("${layout.buildDirectory.get()}/libs/${project.packageName()}-android.jar")
+        zipTree("${layout.buildDirectory.get()}/libs/${project.packageName()}-origin.jar"),
+        zipTree("${layout.buildDirectory.get()}/libs/${project.packageName()}-dex.jar")
       )
     }
   }
@@ -197,11 +203,20 @@ tasks.register<Copy>("deployAll") {
   into(layout.buildDirectory.dir("deploy"))
   duplicatesStrategy = DuplicatesStrategy.INCLUDE
   val targetProjects = listOf(":core", ":ponder")
-  val deployTasks = targetProjects.map { "$it:deploy" }
+  var deployTasks = targetProjects.map { "$it:deploy" }
   dependsOn(deployTasks)
   deployTasks.forEach { mustRunAfter(it) }
   targetProjects.forEach {
     val sub = project(it)
     from("${sub.layout.buildDirectory.get()}/libs/${sub.packageName()}.jar")
+  }
+  val platformProjects = listOf(":lwjgl", ":lwjgl:opus")
+  deployTasks = platformProjects.map { "$it:deploy" }
+  dependsOn(deployTasks)
+  deployTasks.forEach { mustRunAfter(it) }
+  platformProjects.forEach {
+    val sub = project(it)
+    from("${sub.layout.buildDirectory.get()}/libs/${sub.packageName()}-android.jar")
+    from("${sub.layout.buildDirectory.get()}/libs/${sub.packageName()}-desktop.jar")
   }
 }

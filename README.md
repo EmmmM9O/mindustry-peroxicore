@@ -14,9 +14,7 @@
 
 **English** | [中文](README_zh_CN.md)
 
-PeroxiCore — the Kotlin vanguard leading Mindustry modding into new frontiers. Raw power,
-boundless reach, and imagination aimed at the stars.
-
+PeroxiCore — the Kotlin vanguard leading Mindustry modding into new frontiers.
 ---
 
 ## Modules
@@ -71,15 +69,15 @@ the annotation, filling in `main`, version and `minGameVersion` for you.
 
 ```kotlin
 @ModConfig(
-    name = "mycore",
-    displayName = "My Core",
-    author = "You",
-    description = "A PeroxiCore-based mod",
+  name = "mycore",
+  displayName = "My Core",
+  author = "You",
+  description = "A PeroxiCore-based mod",
 )
 class MyMod : Mod() {
-    override fun init() {}
+  override fun init() {}
 
-    override fun loadContent() {}
+  override fun loadContent() {}
 }
 ```
 

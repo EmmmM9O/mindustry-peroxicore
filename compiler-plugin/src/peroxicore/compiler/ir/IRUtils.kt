@@ -41,7 +41,9 @@ fun IrClass.interfaceAncestors(): List<IrClass> =
 // readonlyd
 @OptIn(UnsafeDuringIrConstructionAPI::class)
 fun IrAnnotation.mapping() =
-  symbol.owner.parameters.associate { it.name to (arguments[it] ?: it.defaultValue?.expression) }
+  symbol.owner.parameters.associate {
+    it.name to (arguments[it] ?: it.defaultValue?.expression)
+  }
 
 fun IrExpression.asString() = (this as IrConst).value as String
 
@@ -69,12 +71,16 @@ fun IrExpression.stringArr(): List<String> =
   }
 
 @OptIn(UnsafeDuringIrConstructionAPI::class)
-fun IrSimpleType.asStr() = (classifier.owner as IrClass).classId!!.asSingleFqName().asString()
+fun IrSimpleType.asStr() =
+  (classifier.owner as IrClass).classId!!.asSingleFqName().asString()
 
 fun IrFunction.typeStr() =
   parameters.drop(1).joinToString(",") { (it.type as IrSimpleType).asStr() }
 
 fun splitPair(input: String): Pair<String, String> {
   val idx = input.indexOf(':')
-  return if (idx == -1) input to "" else input.substring(0, idx) to input.substring(idx + 1)
+  return if (idx == -1) input to "" else input.substring(
+    0,
+    idx
+  ) to input.substring(idx + 1)
 }

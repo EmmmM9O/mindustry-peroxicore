@@ -3,8 +3,7 @@ package peroxicore.mod
 import arc.files.*
 import arc.util.*
 import arc.util.serialization.*
-import arc.util.serialization.Jval.Jformat
-import arc.util.serialization.Jval.read
+import arc.util.serialization.Jval.*
 
 object POCMods {
   val json = Json()

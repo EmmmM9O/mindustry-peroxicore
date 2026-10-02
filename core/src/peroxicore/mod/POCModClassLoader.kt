@@ -60,9 +60,9 @@ class POCModClassLoader(
   private val String.isCoreClass: Boolean
     get() =
       startsWith("java.") ||
-        startsWith("javax.") ||
-        startsWith("jdk.") ||
-        startsWith("android.") ||
-        startsWith("kotlin.") ||
-        startsWith("sun.")
+          startsWith("javax.") ||
+          startsWith("jdk.") ||
+          startsWith("android.") ||
+          startsWith("kotlin.") ||
+          startsWith("sun.")
 }

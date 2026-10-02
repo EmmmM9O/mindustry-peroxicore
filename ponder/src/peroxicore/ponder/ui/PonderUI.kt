@@ -5,7 +5,7 @@ import arc.scene.*
 import arc.scene.ui.layout.*
 import arc.struct.*
 import mindustry.*
-import mindustry.game.EventType.Trigger
+import mindustry.game.EventType.*
 import mindustry.gen.*
 import mindustry.ui.*
 import mindustry.ui.fragments.*
@@ -84,6 +84,8 @@ object PonderUI {
   var PlacementFragment.toggler: Table by accessField("toggler")
   var PlacementFragment.menuHoverBlock: Block? by accessField("menuHoverBlock")
   var Element.update_: Runnable? by accessField("update")
+  var Table.sizeInvalid by accessBoolean("sizeInvalid")
+  var Element.needsLayout by accessBoolean("needsLayout")
   var lastTogger: Table? = null
 
   fun load() {

@@ -9,6 +9,7 @@ val kotlinVersion = props.getProperty("kotlinVersion")
 
 dependencies {
   implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+  implementation("com.gradleup.shadow:shadow-gradle-plugin:9.3.0")
 }
 
 repositories {
