@@ -77,6 +77,11 @@ open class WorldPonderActionScope(
     if (block is Floor) setFloor(block) else setBlock(block, rotation, team)
   }
 
+  /** Applies a building configuration captured by the recorder. */
+  fun Point.configure(value: Any?) {
+    tiles.get(x, y)?.build?.configure(value)
+  }
+
   fun text(newText: String) =
     newText
       .takeIf { it.isNotEmpty() && it[0] in "$@" }

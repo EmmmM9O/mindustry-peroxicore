@@ -8,3 +8,9 @@ build/
 .kotlin-lsp.lua
 .disable-kotlin-lsp
 .kotlin
+
+tmp
+.xmake
+lwjgl/natives/*/libs/
+.vscode
+.kotlin

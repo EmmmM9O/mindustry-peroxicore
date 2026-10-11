@@ -15,8 +15,11 @@ fun getProperty(key: String): String? {
       return it
     }
   }
-  return project.findProperty(key) as? String
+  return project.findProperty(key) as? String ?: System.getenv(key)
 }
+
+Config.githubMirror = getProperty("GITHUB_MIRROR") ?: ""
+Config.buildNative = getProperty("BUILD_NATIVE") == "true"
 
 plugins {
   `java-library`
@@ -47,12 +50,18 @@ subprojects {
     jvmToolchain(25)
     sourceSets {
       getByName("main") {
-        kotlin.srcDirs("src")
+        kotlin.srcDirs("src", "build/generated/kotlin")
         kotlin.srcDirs("build/generated/ksp/main/kotlin")
       }
       getByName("test") {
         kotlin.srcDirs("test")
       }
+    }
+  }
+
+  sourceSets {
+    main {
+      java.srcDirs("src", "build/generated/java")
     }
   }
 
@@ -126,6 +135,12 @@ subprojects {
     }
 
     withType<ShadowJar> {
+      if(project.path != ":core") {
+        dependencies {
+          exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib.*"))
+	        exclude(dependency("org.jetbrains.kotlin:kotlin-reflect.*"))
+        }
+      }
       archiveFileName.set("${project.packageName()}-origin.jar")
       from("assets/") { include("**") }
     }
@@ -183,14 +198,14 @@ subprojects {
     }
   }
   group = "com.github.emmmm9o"
-  version = modVersion
+  version = "main-SNAPSHOT"
   publishing {
     publications {
       create<MavenPublication>("library") {
         from(components["java"])
-        groupId = "com.github.emmmm9o.peroxicore"
+        groupId = "com.github.emmmm9o.mindustry-peroxicore"
         artifactId = project.path.substring(1).replace(":", "-")
-        version = modVersion
+        version = "main-SNAPSHOT"
       }
     }
   }

@@ -98,28 +98,58 @@ class MyMod : Mod()
 
 ```kotlin
 Blocks.electrolyzer.register {
-    keyframes {
-        speed(1f)
-        world(13, 11) {
-            fillFloor(Blocks.rhyolite)
-            (4 at 3).around3().fill(Blocks.rhyoliteVent)
-            (8 at 5).focus(5)
-        }
-        frame(50f) {
-            (8 at 5).build(Blocks.electrolyzer)
-            (9 at 5).label("电解机", 4f)
-        }
-        frame(200f) {
-            (4 at 3).focus(5)
-            (4 at 3).build(Blocks.ventCondenser).thenChain {
-                (4 at 7).build(Blocks.turbineCondenser)
-            }.thenChain {
-                (4 at 5).build(Blocks.beamNode)
-            }
-        }
+  keyframes {
+    speed(1f)
+    world(13, 11) {
+      fillFloor(Blocks.rhyolite)
+      (4 at 3).around3().fill(Blocks.rhyoliteVent)
+      (8 at 5).focus(5)
     }
+    frame(50f) {
+      (8 at 5).build(Blocks.electrolyzer)
+      (9 at 5).label("Electrolyzer", 4f)
+    }
+    frame(200f) {
+      (4 at 3).focus(5)
+      (4 at 3).build(Blocks.ventCondenser).thenChain {
+          (4 at 7).build(Blocks.turbineCondenser)
+      }.thenChain {
+          (4 at 5).build(Blocks.beamNode)
+      }
+    }
+  }
 }
 ```
+Or
+```java
+PonderJava.register(
+  Blocks.electrolyzer,
+  scene -> {
+    scene.keyframes(
+        kf -> {
+          kf.speed(1f);
+          kf.world(
+              13,
+              11,
+              w -> {
+                w.fillFloor(Blocks.rhyolite);
+                w.fillAround(4, 3, 3, Blocks.rhyoliteVent);
+                w.fillAround(4, 7, 3, Blocks.rhyoliteVent);
+                w.focus(8, 5, 5);
+              });
+          kf.frame(
+              50f,
+              f -> {
+                Weathers.rain.create();
+                f.build(8, 5, Blocks.electrolyzer);
+                f.label(9, 5, "电解机", 4f);
+                UnitTypes.flare.spawn(Team.get(2), 24f, 40f);
+              });
+        });
+  });
+
+```
+
 
 坐标写作 `(x at y)`，区域写作 `(range by range)`，完整语法见 `PositionDsl`。场景运行在世界的一份
 沙盒副本上（`PonderGroups` 会替换全部 `Groups` 表以及 `freeQueue`），因此不会碰到玩家真正的存档。

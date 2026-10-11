@@ -1,7 +1,10 @@
 import peroxicore.*
 
 platformConfig()
+
 excludeLwjgl()
+
+val lwjglOpus = androidLwjgl("lwjgl-natives-opus")
 
 dependencies {
   compileOnlyApi(project(":lwjgl"))
@@ -11,4 +14,6 @@ dependencies {
 
   ksp(project(":ksp"))
   kotlinCompilerPluginClasspath(project(":compiler-plugin"))
+
+  "shadowAndroid"(lwjglOpus)
 }

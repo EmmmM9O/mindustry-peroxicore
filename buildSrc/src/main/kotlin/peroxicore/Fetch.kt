@@ -22,8 +22,9 @@ fun Project.fetchGithub(
 
   targetDir.mkdirs()
   val url = URI(
-    "https://github.com/$owner/$repo/releases/download/$tag/$assetName"
+    "${Config.githubMirror}https://github.com/$owner/$repo/releases/download/$tag/$assetName"
   ).toURL()
+  println("Downloading $url to $targetDir")
   val conn = (url.openConnection() as HttpURLConnection).apply {
     instanceFollowRedirects = true
     connectTimeout = 15_000
@@ -54,3 +55,7 @@ fun Project.fetchGithub(
 
   return files(file.absolutePath)
 }
+
+fun Project.fetchNative(module: String)
+  = fetchGithub("EmmmM9O", "mindustry-peroxicore", "natives", "$module.jar")
+

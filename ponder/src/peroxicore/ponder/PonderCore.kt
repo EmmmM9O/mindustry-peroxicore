@@ -17,6 +17,7 @@ import mindustry.world.*
 import peroxicore.ponder.api.*
 import peroxicore.ponder.input.*
 import peroxicore.ponder.render.*
+import peroxicore.ponder.record.PonderRecorder
 import peroxicore.ponder.scene.*
 import peroxicore.ponder.ui.*
 import universe.util.reflect.*
@@ -226,6 +227,7 @@ object PonderCore : ApplicationListener, TimelineContext {
   }
 
   fun initPonder() {
+    PonderRecorder.init()
     input.init()
     renderer.init()
     ponder = PonderDialog()

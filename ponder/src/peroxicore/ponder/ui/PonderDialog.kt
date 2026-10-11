@@ -19,7 +19,10 @@ import mindustry.graphics.*
 import mindustry.ui.*
 import mindustry.ui.dialogs.*
 import peroxicore.ponder.*
+import peroxicore.ponder.record.PonderRecorder
 import peroxicore.ponder.scene.*
+
+import kotlin.math.*
 
 class TimelineBar : Element() {
   var barName = ""
@@ -114,14 +117,22 @@ class TimelineBar : Element() {
   }
 
   val timelineBack = (Tex.whiteui as TextureRegionDrawable)
-  val tickWidth = 6f
-  val tickOver = 3f
-  val iconWidth = 20f
-  val fullWidth = 60f
-  val hitWidth = 80f
-  val barHeight = 20f
+  var scl = Scl.scl()
+  val tickWidth 
+    get() = 6f * scl
+  val tickOver 
+    get() = 3f * scl
+  val iconWidth 
+    get() = 20f * scl
+  val fullWidth 
+    get() = 60f * scl
+  val hitWidth 
+    get() = 80f * scl
+  val barHeight 
+    get() = 40f * scl
 
   override fun draw() {
+    scl = Scl.scl()
     var computed = Mathf.clamp(fraction.get())
 
     if (lastValue > computed) {
@@ -275,6 +286,42 @@ open class PonderDialog :
         }.size(marginSize)
         .get()
         .resizeImage(marginSize)
+      /* Still TODO
+      bar
+        .button(Icon.settings, style1) {
+          if (PonderRecorder.active) PonderRecorder.stop() else {
+            hide()
+            // endDialog() restores the normal world; only then take the initial snapshot.
+            Core.app.post { PonderRecorder.start() }
+          }
+        }.size(marginSize)
+        .get()
+        .resizeImage(marginSize)
+      bar
+        .button(Icon.play, style1) {
+          if (!PonderRecorder.active) PonderRecorder.preview()
+        }.size(marginSize)
+        .get()
+        .resizeImage(marginSize)
+      bar
+        .button(Icon.copy, style1) {
+          if (PonderRecorder.hasRecording) {
+            val text = PonderRecorder.exportKotlinDsl()
+            Core.app.setClipboardText(text)
+            FullTextDialog().show("思索 Kotlin DSL（已复制）", text)
+          }
+        }.size(marginSize)
+        .get()
+        .resizeImage(marginSize)
+      bar
+        .button(Icon.save, style1) {
+          if (PonderRecorder.hasRecording) {
+            val text = PonderRecorder.exportKotlinDsl()
+            FileChooser.export("ponder-scene", "kt") { file -> file.writeString(text) }
+          }
+        }.size(marginSize)
+        .get()
+        .resizeImage(marginSize)*/
     }
   val drawable = TextureRegionDrawable(TextureRegion())
   val image = Image(drawable)
@@ -365,14 +412,15 @@ open class PonderDialog :
     view.center()
     val gw = Core.graphics.width
     val gh = Core.graphics.height
-    val size = if (gw > gh) gh * 0.7f else gw * 0.8f
+    val size = if (gw > gh) gh * 0.9f else gw * 0.9f
     val (w, h) =
       scaleToMax(
         PonderCore.tiles.width.toFloat(),
         PonderCore.tiles.height.toFloat(),
         size
       )
-    view.add(image).size(w, h)
+    val scl = Scl.scl()
+    view.add(image).size(w / scl, h / scl)
   }
 
   fun rebuildBar() {

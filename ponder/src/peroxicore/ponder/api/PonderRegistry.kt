@@ -59,6 +59,7 @@ object PonderRegistry {
         }
       }
     }
+    PonderRegistryJava.init()
   }
 
   fun has(content: UnlockableContent) = contentScenes.containsKey(content)

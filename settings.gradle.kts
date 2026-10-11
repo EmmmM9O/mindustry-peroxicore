@@ -13,8 +13,11 @@ include(
   ":ksp",
   ":compiler-plugin",
   ":lwjgl",
+  ":lwjgl:generator",
   ":lwjgl:platform:expects",
   ":lwjgl:platform:android",
   ":lwjgl:platform:desktop",
   ":lwjgl:opus",
+  ":lwjgl:natives",
+  ":lwjgl:natives:natives-android",
 )

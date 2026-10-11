@@ -1,0 +1,7 @@
+subprojects {
+  sourceSets {
+    main {
+      resources.srcDirs("libs")
+    }
+  }
+}

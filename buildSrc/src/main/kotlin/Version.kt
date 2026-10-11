@@ -11,6 +11,8 @@ fun Project.packageName(): String =
 
 object Config {
   var rootDir: File? = null
+  var githubMirror: String = ""
+  var buildNative: Boolean = false
   val properties by lazy {
     java.util.Properties().apply {
       File(rootDir!!, "gradle.properties").inputStream().use {
@@ -30,7 +32,7 @@ object Versions {
   const val ksp = "2.3.10"
   val kotlin by lazy { Config.get("kotlinVersion") }
   const val mindustry = "v160.4"
-  const val lwjgl = "3.4.3"
+  const val lwjgl = "3.3.6"
 }
 
 object Library {

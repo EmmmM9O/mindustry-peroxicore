@@ -2,40 +2,47 @@ package peroxicore
 
 import arc.*
 import arc.util.*
-import mindustry.mod.*
-import org.lwjgl.system.*
-import peroxicore.annotations.*
-import peroxicore.lwjgl.*
 import java.io.*
 import java.util.function.*
+import mindustry.mod.*
+import org.lwjgl.system.*
+import org.lwjgl.system.Library
+import org.lwjgl.system.linux.*
+import org.lwjgl.system.linux.DynamicLinkLoader.*
+import peroxicore.annotations.*
+import peroxicore.lwjgl.*
+import peroxicore.lwjgl.Library as PLibrary
 
 class PODebugStream : Supplier<PrintStream> {
-  override fun get() = PrintStream(object : OutputStream() {
-    private val line = StringBuilder()
+  override fun get() =
+    PrintStream(
+      object : OutputStream() {
+        private val line = StringBuilder()
 
-    override fun write(b: Int) {
-      val c = b.toChar()
-      if (c == '\n') {
-        flushLine()
-      } else {
-        line.append(c)
+        override fun write(b: Int) {
+          val c = b.toChar()
+          if (c == '\n') {
+            flushLine()
+          } else {
+            line.append(c)
+          }
+        }
+
+        private fun flushLine() {
+          val msg = line.toString()
+          line.setLength(0)
+          if (msg.isEmpty()) return
+
+          Log.info(msg)
+        }
       }
-    }
-
-    private fun flushLine() {
-      val msg = line.toString()
-      line.setLength(0)
-      if (msg.isEmpty()) return
-
-      Log.info(msg)
-    }
-  })
+    )
 }
 
 @ModConfig(
   name = "peroxicore-lwjgl",
   displayName = "PeroxiCore Lwjgl",
-  dependencies = ["peroxicore"]
+  dependencies = ["peroxicore"],
 )
 @ImportPeroxiCore
 class PeroxiCoreLwjgl : Mod() {
@@ -45,16 +52,17 @@ class PeroxiCoreLwjgl : Mod() {
       Configuration.DEBUG_LOADER.set(true)
       Configuration.DEBUG_FUNCTIONS.set(true)
       Configuration.DEBUG_STREAM.set("peroxicore.PODebugStream")
+
+      Library.initialize()
+      PLibrary.initialize()
+
       LwjglManager.setup()
       LwjglManager.initGL()
       LwjglManager.setLwjglGL()
     }
   }
 
-  override fun init() {
-  }
+  override fun init() {}
 
-  override fun loadContent() {
-
-  }
+  override fun loadContent() {}
 }

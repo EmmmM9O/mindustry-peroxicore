@@ -2,13 +2,13 @@ package peroxicore.lwjgl
 
 import arc.graphics.*
 import arc.util.*
+import java.nio.*
 import org.lwjgl.opengles.*
 import org.lwjgl.system.MemoryUtil.*
-import java.nio.*
 
 open class LwjglGL20 : GL20 {
   companion object {
-    const val STACK_MAX = 256;
+    const val STACK_MAX = 256
   }
 
   private var buffer: ByteBuffer? = null
@@ -89,7 +89,7 @@ open class LwjglGL20 : GL20 {
     srcRGB: Int,
     dstRGB: Int,
     srcAlpha: Int,
-    dstAlpha: Int
+    dstAlpha: Int,
   ) {
     GLES20.glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha)
   }
@@ -318,9 +318,10 @@ open class LwjglGL20 : GL20 {
         indices.limit(oldLimit)
       }
 
-      else -> throw ArcRuntimeException(
-        "Can't use ${indices.javaClass.name} with this method. Use ShortBuffer or ByteBuffer instead. Blame LWJGL"
-      )
+      else ->
+        throw ArcRuntimeException(
+          "Can't use ${indices.javaClass.name} with this method. Use ShortBuffer or ByteBuffer instead. Blame LWJGL"
+        )
     }
   }
 
@@ -621,7 +622,7 @@ open class LwjglGL20 : GL20 {
     target: Int,
     internalformat: Int,
     width: Int,
-    height: Int
+    height: Int,
   ) {
     GLES20.glRenderbufferStorage(target, internalformat, width, height)
   }
@@ -958,7 +959,7 @@ open class LwjglGL20 : GL20 {
     GLES20.glUniformMatrix2fv(
       location,
       transpose,
-      toFloatBuffer(value, offset, count shl 2)
+      toFloatBuffer(value, offset, count shl 2),
     )
   }
 
@@ -981,7 +982,7 @@ open class LwjglGL20 : GL20 {
     GLES20.glUniformMatrix3fv(
       location,
       transpose,
-      toFloatBuffer(value, offset, count * 9)
+      toFloatBuffer(value, offset, count * 9),
     )
   }
 
@@ -1004,7 +1005,7 @@ open class LwjglGL20 : GL20 {
     GLES20.glUniformMatrix4fv(
       location,
       transpose,
-      toFloatBuffer(value, offset, count shl 4)
+      toFloatBuffer(value, offset, count shl 4),
     )
   }
 
@@ -1112,9 +1113,10 @@ open class LwjglGL20 : GL20 {
         }
       }
 
-      else -> throw ArcRuntimeException(
-        "Can't use ${buffer.javaClass.name} with this method. Use ByteBuffer instead. Blame LWJGL"
-      )
+      else ->
+        throw ArcRuntimeException(
+          "Can't use ${buffer.javaClass.name} with this method. Use ByteBuffer instead. Blame LWJGL"
+        )
     }
   }
 

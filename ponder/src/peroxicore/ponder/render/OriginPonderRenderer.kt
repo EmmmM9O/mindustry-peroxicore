@@ -12,6 +12,7 @@ import peroxicore.ponder.*
 import peroxicore.ponder.world.*
 import peroxicore.util.handler.*
 import universe.util.reflect.*
+import kotlin.math.*
 
 class DefaultOverlayRenderer : OverlayRenderer() {
   init {
@@ -45,11 +46,8 @@ class OriginPonderRenderer : PonderRenderer {
     get() = buffer.texture
   val size: Float
     get() =
-      if (Core.graphics.width > Core.graphics.height) {
-        Core.graphics.height * 0.7f
-      } else {
-        Core.graphics.width * 0.8f
-      }
+      min(Core.graphics.width, Core.graphics.height).toFloat()
+
   val resolution
     get() =
       scaleToMax(

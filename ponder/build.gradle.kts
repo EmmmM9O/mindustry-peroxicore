@@ -1,5 +1,6 @@
 dependencies {
   compileOnlyApi(project(":core"))
+  implementation(Library.kotlinpoet)
 
   ksp(project(":ksp"))
   kotlinCompilerPluginClasspath(project(":compiler-plugin"))

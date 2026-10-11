@@ -2,11 +2,11 @@ package peroxicore.lwjgl
 
 import arc.graphics.*
 import arc.util.*
+import java.nio.*
 import org.lwjgl.opengles.*
 import org.lwjgl.system.APIUtil.*
 import org.lwjgl.system.MemoryStack.*
 import org.lwjgl.system.MemoryUtil.*
-import java.nio.*
 
 class LwjglGL30 : LwjglGL20(), GL30 {
   override fun glReadBuffer(mode: Int) {
@@ -285,7 +285,7 @@ class LwjglGL30 : LwjglGL20(), GL30 {
       x,
       y,
       width,
-      height
+      height,
     )
   }
 
@@ -414,7 +414,7 @@ class LwjglGL30 : LwjglGL20(), GL30 {
       dstX1,
       dstY1,
       mask,
-      filter
+      filter,
     )
   }
 
@@ -482,7 +482,7 @@ class LwjglGL30 : LwjglGL20(), GL30 {
     target: Int,
     internalformat: Int,
     width: Int,
-    height: Int
+    height: Int,
   ) {
     GLES30.glRenderbufferStorage(target, internalformat, width, height)
   }
@@ -499,7 +499,7 @@ class LwjglGL30 : LwjglGL20(), GL30 {
       samples,
       internalformat,
       width,
-      height
+      height,
     )
   }
 
@@ -565,7 +565,7 @@ class LwjglGL30 : LwjglGL20(), GL30 {
     index: Int,
     buffer: Int,
     offset: Int,
-    size: Int
+    size: Int,
   ) {
     GLES30.glBindBufferRange(target, index, buffer, offset.toLong(), size.toLong())
   }
@@ -577,7 +577,7 @@ class LwjglGL30 : LwjglGL20(), GL30 {
   override fun glTransformFeedbackVaryings(
     program: Int,
     varyings: Array<String>,
-    bufferMode: Int
+    bufferMode: Int,
   ) {
     GLES30.glTransformFeedbackVaryings(program, varyings, bufferMode)
   }
@@ -587,7 +587,7 @@ class LwjglGL30 : LwjglGL20(), GL30 {
     size: Int,
     type: Int,
     stride: Int,
-    offset: Int
+    offset: Int,
   ) {
     GLES30.glVertexAttribIPointer(index, size, type, stride, offset.toLong())
   }
@@ -739,7 +739,7 @@ class LwjglGL30 : LwjglGL20(), GL30 {
     mode: Int,
     first: Int,
     count: Int,
-    instanceCount: Int
+    instanceCount: Int,
   ) {
     GLES30.glDrawArraysInstanced(mode, first, count, instanceCount)
   }
@@ -756,7 +756,7 @@ class LwjglGL30 : LwjglGL20(), GL30 {
       count,
       type,
       indicesOffset.toLong(),
-      instanceCount
+      instanceCount,
     )
   }
 
@@ -843,7 +843,7 @@ class LwjglGL30 : LwjglGL20(), GL30 {
   override fun glInvalidateFramebuffer(
     target: Int,
     numAttachments: Int,
-    attachments: IntBuffer
+    attachments: IntBuffer,
   ) {
     GLES30.glInvalidateFramebuffer(target, attachments)
   }
