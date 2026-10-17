@@ -56,6 +56,8 @@ val CLOFIFILTER =
       LofiFilter(
         "create",
         "",
+
+        void(),
       )
 
       int(

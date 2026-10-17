@@ -64,5 +64,7 @@ val CROBOTIZEFILTER =
       RobotizeFilter(
         "create",
         "",
+
+        void(),
       )
     }

@@ -56,6 +56,8 @@ val CFLANGERFILTER =
       FlangerFilter(
         "create",
         "",
+
+        void(),
       )
 
       int(

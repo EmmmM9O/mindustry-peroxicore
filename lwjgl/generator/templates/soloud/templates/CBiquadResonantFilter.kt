@@ -60,6 +60,8 @@ val CBIQUADRESONANTFILTER =
       BiquadResonantFilter(
         "create",
         "",
+
+        void(),
       )
 
       int(

@@ -62,5 +62,7 @@ val CBASSBOOSTFILTER =
       BassboostFilter(
         "create",
         "",
+
+        void(),
       )
     }

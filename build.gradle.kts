@@ -89,7 +89,7 @@ subprojects {
     maven { url = uri("https://www.jitpack.io") }
     ivy {
       name = "MindustryDeps"
-      url = uri("https://gh-proxy.org/github.com/Anuken/")
+      url = uri("${Config.githubMirror}https://github.com/Anuken/")
       patternLayout {
         artifact("/Mindustry/releases/download/[revision]/dependencies.[ext]")
       }
@@ -225,7 +225,7 @@ tasks.register<Copy>("deployAll") {
     val sub = project(it)
     from("${sub.layout.buildDirectory.get()}/libs/${sub.packageName()}.jar")
   }
-  val platformProjects = listOf(":lwjgl", ":lwjgl:opus")
+  val platformProjects = listOf(":lwjgl", ":lwjgl:opus", ":lwjgl:ktx", ":lwjgl:font")
   deployTasks = platformProjects.map { "$it:deploy" }
   dependsOn(deployTasks)
   deployTasks.forEach { mustRunAfter(it) }

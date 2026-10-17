@@ -1,11 +1,12 @@
-#include "common_tools.h"
 #include "peroxicore.h"
+#include "common_tools.h"
 #include <fstream>
 #include <optional>
 #include <regex>
 #include <string>
 
- std::optional<std::string> find_lib_path(const std::string &pattern) {
+std::optional<std::string> find_lib_path(const std::string &pattern) {
+#if defined(__linux__)
   std::ifstream maps("/proc/self/maps");
   if (!maps)
     return std::nullopt;
@@ -22,17 +23,22 @@
     return line.substr(pos);
   }
   return std::nullopt;
+#elif
+  return std::nullopt;
+#endif
 }
 
 EXTERN_C_ENTER
 
-JNIEXPORT jstring JNICALL Java_peroxicore_lwjgl_LibraryUtil_findLibpath
-  (JNIEnv * env, jclass clazz, jstring pattern){
+JNIEXPORT jstring JNICALL Java_peroxicore_lwjgl_LibraryUtil_findLibpath(
+    JNIEnv *env, jclass clazz, jstring pattern) {
   const char *pat = env->GetStringUTFChars(pattern, nullptr);
-  if (!pat) return nullptr;
+  if (!pat)
+    return nullptr;
   auto result = find_lib_path(pat);
   env->ReleaseStringUTFChars(pattern, pat);
-  if(!result.has_value()) return nullptr;
+  if (!result.has_value())
+    return nullptr;
   return env->NewStringUTF(result.value().c_str());
 }
 

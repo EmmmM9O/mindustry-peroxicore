@@ -21,9 +21,10 @@ end
 out_dir = out_dir .. "/libs/"
 if is_plat("linux") then
 	out_dir = out_dir .. "linux"
-end
-if is_plat("android") then
+elseif is_plat("android") then
 	out_dir = out_dir .. "android"
+elseif is_plat("windows") then
+	out_dir = out_dir .. "windows"
 end
 out_dir = out_dir .. "/"
 out_dir = out_dir .. (ARCH_MAP[get_config("arch")] or get_config("arch") or "unknown")

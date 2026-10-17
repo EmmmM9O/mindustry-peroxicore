@@ -15,6 +15,8 @@ val CBUS =
       Bus(
         "create",
         "",
+
+        void(),
       )
 
       void(

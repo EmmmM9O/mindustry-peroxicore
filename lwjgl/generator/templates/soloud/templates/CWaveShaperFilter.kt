@@ -28,6 +28,8 @@ val CWAVESHAPERFILTER =
       WaveShaperFilter(
         "create",
         "",
+
+        void(),
       )
 
       int(

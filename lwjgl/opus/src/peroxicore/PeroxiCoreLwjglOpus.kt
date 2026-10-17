@@ -20,7 +20,8 @@ class PeroxiCoreLwjglOpus : Mod() {
   override fun init() {
     val file = Vars.modDirectory.child("test.ogg")
     Time.run(1f) {
-      play(file.absolutePath())
+// Test
+//      play(file.absolutePath())
     }
   }
 

@@ -15,6 +15,8 @@ val CWAVSTREAM =
       WavStream(
         "create",
         "",
+
+        void(),
       )
 
       int(

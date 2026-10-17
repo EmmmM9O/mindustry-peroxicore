@@ -15,6 +15,8 @@ val CFFTFILTER =
       FFTFilter(
         "create",
         "",
+
+        void(),
       )
 
       int(

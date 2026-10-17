@@ -57,6 +57,8 @@ val CECHOFILTER =
       EchoFilter(
         "create",
         "",
+
+        void(),
       )
 
       int(

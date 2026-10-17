@@ -18,6 +18,8 @@ include(
   ":lwjgl:platform:android",
   ":lwjgl:platform:desktop",
   ":lwjgl:opus",
+  ":lwjgl:ktx",
+  ":lwjgl:font",
   ":lwjgl:natives",
   ":lwjgl:natives:natives-android",
 )

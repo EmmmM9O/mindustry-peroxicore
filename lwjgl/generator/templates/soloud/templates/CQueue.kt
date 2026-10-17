@@ -15,6 +15,8 @@ val CQUEUE =
       Queue(
         "create",
         "",
+
+        void(),
       )
 
       int(

@@ -58,6 +58,8 @@ val CFREEVERBFILTER =
       FreeverbFilter(
         "create",
         "",
+
+        void(),
       )
 
       int(

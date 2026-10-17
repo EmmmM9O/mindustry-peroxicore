@@ -15,6 +15,8 @@ val CDCREMOVALFILTER =
       DCRemovalFilter(
         "create",
         "",
+
+        void(),
       )
 
       int(
