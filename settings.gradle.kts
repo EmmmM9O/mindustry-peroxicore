@@ -12,6 +12,7 @@ include(
   ":annotations",
   ":ksp",
   ":compiler-plugin",
+// ":gradle-plugin", TOODO
   ":lwjgl",
   ":lwjgl:generator",
   ":lwjgl:platform:expects",
@@ -22,4 +23,5 @@ include(
   ":lwjgl:font",
   ":lwjgl:natives",
   ":lwjgl:natives:natives-android",
+  ":embed",
 )

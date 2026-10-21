@@ -1,7 +1,5 @@
 package peroxicore.util
 
-fun getCurrentLocation(): String {
-  val stackTrace = Throwable().stackTrace
-  val element = stackTrace[1]
-  return "${element.fileName}:${element.lineNumber}"
-}
+fun getCurrentLocation(skip: Int = 0): String = StackTraceSourceLocator.locate(skip).toString()
+
+fun getCurrentSourceLocation(skip: Int = 0): SourceLocation = StackTraceSourceLocator.locate(skip)

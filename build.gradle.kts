@@ -197,13 +197,13 @@ subprojects {
       )
     }
   }
-  group = "com.github.emmmm9o"
+  group = "com.github.emmmM9O"
   version = "main-SNAPSHOT"
   publishing {
     publications {
       create<MavenPublication>("library") {
         from(components["java"])
-        groupId = "com.github.emmmm9o.mindustry-peroxicore"
+        groupId = "com.github.emmmM9O.mindustry-peroxicore"
         artifactId = project.path.substring(1).replace(":", "-")
         version = "main-SNAPSHOT"
       }

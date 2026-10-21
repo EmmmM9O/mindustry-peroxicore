@@ -26,11 +26,10 @@ object POCMods {
       return null
     }
     val meta =
-      json
-        .fromJson(
-          PeroxicoreMeta::class.java,
-          read(metaFile.readString()).toString(Jformat.plain)
-        )
+      json.fromJson(
+        PeroxicoreMeta::class.java,
+        read(metaFile.readString()).toString(Jformat.plain),
+      )
 
     return meta
   }

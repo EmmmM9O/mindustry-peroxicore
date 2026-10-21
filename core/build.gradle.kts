@@ -4,6 +4,7 @@ dependencies {
   api(kotlin("stdlib-jdk8"))
   api(kotlin("reflect"))
   api("com.github.EB-wilson.UniverseKit:reflection:1.4")
+  api("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
   compileOnlyApi("com.github.EB-wilson.UniverseKit:platform:1.4")
   compileOnlyApi("com.github.EB-wilson.UniverseKit:expects:1.4")
 

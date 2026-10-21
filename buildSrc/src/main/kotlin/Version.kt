@@ -44,6 +44,7 @@ object Library {
   const val kotlinpoet = "com.squareup:kotlinpoet:${Versions.kotlinpoet}"
   const val kotlinpoetKsp = "com.squareup:kotlinpoet-ksp:${Versions.kotlinpoet}"
   val compiler = "org.jetbrains.kotlin:kotlin-compiler-embeddable:${Versions.kotlin}"
+  val gradleApi = "org.jetbrains.kotlin:kotlin-gradle-plugin-api:${Versions.kotlin}"
   const val mindustry = "Anuken:Mindustry:${Versions.mindustry}"
   const val lwjgl = "org.lwjgl:lwjgl:${Versions.lwjgl}"
   const val lwjglCore = "org.lwjgl:lwjgl"

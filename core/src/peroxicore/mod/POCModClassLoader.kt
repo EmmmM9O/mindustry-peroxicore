@@ -2,9 +2,7 @@ package peroxicore.mod
 
 import arc.struct.*
 
-class POCModClassLoader(
-  parent: ClassLoader,
-) : ClassLoader(parent) {
+class POCModClassLoader(parent: ClassLoader) : ClassLoader(parent) {
   private val children = Seq<ClassLoader>()
   private val inChild = ThreadLocal.withInitial { false }
 
@@ -32,12 +30,13 @@ class POCModClassLoader(
   // }
   @Throws(ClassNotFoundException::class)
   override fun findClass(name: String): Class<*> {
-    // a child may try to delegate class loading to its parent, which is *this class loader* - do not let that happen
+    // a child may try to delegate class loading to its parent, which is *this class loader* - do
+    // not let that happen
     if (inChild.get()) {
       inChild.set(false)
       throw ClassNotFoundException(name)
     }
-//    Log.info("Load $name ${getCurrentLocation()}")
+    //    Log.info("Load $name ${getCurrentLocation()}")
     var last: ClassNotFoundException? = null
     val size = children.size
     // if it doesn't exist in the main class loader, try all the children
@@ -60,9 +59,9 @@ class POCModClassLoader(
   private val String.isCoreClass: Boolean
     get() =
       startsWith("java.") ||
-          startsWith("javax.") ||
-          startsWith("jdk.") ||
-          startsWith("android.") ||
-          startsWith("kotlin.") ||
-          startsWith("sun.")
+        startsWith("javax.") ||
+        startsWith("jdk.") ||
+        startsWith("android.") ||
+        startsWith("kotlin.") ||
+        startsWith("sun.")
 }

@@ -49,7 +49,8 @@ object Library {
     return PLinuxLibrary(name)
   }
 
-  @JvmStatic fun initialize() {
+  @JvmStatic
+  fun initialize() {
     loadFind("arc")
   }
 }

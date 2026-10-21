@@ -17,11 +17,13 @@ class POCPlatform(
     jar: Fi,
     parent: ClassLoader,
   ): ClassLoader =
-    POCMods.load(jar)?.takeIf { it.peroxicoreLoader }?.let {
-      platform.loadJar(jar, coreLoader).also {
-        coreLoader.addChild(it)
-      }
-    } ?: platform.loadJar(jar, parent)
+    POCMods.load(jar)
+      ?.takeIf { it.peroxicoreLoader }
+      ?.let {
+        platform.loadJar(jar, coreLoader).also {
+          coreLoader.addChild(it)
+        }
+      } ?: platform.loadJar(jar, parent)
 
   override fun updateLobby() = platform.updateLobby()
 
@@ -50,8 +52,7 @@ class POCPlatform(
 
   override fun shareFile(file: Fi) = platform.shareFile(file)
 
-  override fun showFileChooser(params: FileChooserParams) =
-    platform.showFileChooser(params)
+  override fun showFileChooser(params: FileChooserParams) = platform.showFileChooser(params)
 
   override fun hide() = platform.hide()
 
