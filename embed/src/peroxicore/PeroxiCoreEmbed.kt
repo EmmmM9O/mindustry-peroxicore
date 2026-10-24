@@ -1,0 +1,5 @@
+package peroxicore
+
+object PeroxiCoreEmbed {
+
+}

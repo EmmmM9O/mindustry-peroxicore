@@ -9,7 +9,6 @@ import kotlin.math.*
 interface PositionScope {
   typealias Point = Point2
 
-  @Actionable
   typealias Vec = Vec2
 
   typealias Rect = arc.math.geom.Rect

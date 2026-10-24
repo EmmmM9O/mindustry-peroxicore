@@ -75,4 +75,6 @@ enum class PonderTrigger {
   update,
   load,
   worldLoad,
+  begin,
+  end,
 }

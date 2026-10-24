@@ -360,6 +360,7 @@ object PonderCore : ApplicationListener, TimelineContext {
     input.begin()
     renderer.begin()
     PonderGroups.begin()
+    Events.fire(PonderTrigger.begin)
   }
 
   fun end() {
@@ -371,5 +372,6 @@ object PonderCore : ApplicationListener, TimelineContext {
     input.end()
     renderer.end()
     PonderGroups.end()
+    Events.fire(PonderTrigger.end)
   }
 }
