@@ -19,43 +19,43 @@ object PonderRegistry {
         speed(1f)
         world(13, 11) {
           fillFloor(Blocks.rhyolite)
-          (4 at 3).around3().fill(Blocks.rhyoliteVent)
-          (4 at 7).around3().fill(Blocks.rhyoliteVent)
-          (8 at 5).focus(5)
+          at(4, 3).around3().fill(Blocks.rhyoliteVent)
+          at(4, 7).around3().fill(Blocks.rhyoliteVent)
+          at(8, 5).focus(5)
         }
         frame(50f) {
           Weathers.rain.create()
-          (8 at 5).build(Blocks.electrolyzer)
-          (9 at 5).label("电解机", 4f)
+          at(8, 5).build(Blocks.electrolyzer)
+          label("电解机", 4f).at(9, 5)
           UnitTypes.flare.spawn(Team.get(2), 6 * 4f, 5 * 8f)
         }
         frame(200f) {
-          (4 at 3).focus(5)
-          (5 at 3).label("涡轮冷凝器 发电", 4f)
+          at(4, 3).focus(5)
+          at(5, 3).label("涡轮冷凝器 发电", 4f)
           build(Blocks.ventCondenser)
             .at(4, 3)
             .thenChain {
-              (4 at 7).focus(5)
-              (5 at 7).label("排气冷凝器 产生水", 4f)
-              (4 at 7).build(Blocks.turbineCondenser)
+              at(4, 7).focus(5)
+              label("排气冷凝器 产生水", 4f).at(5, 7)
+              at(4, 7).build(Blocks.turbineCondenser)
             }.thenChain {
               full()
-              (4 at 5).build(Blocks.beamNode)
+              at(4, 5).build(Blocks.beamNode)
             }
         }
         frame(400f, Icon.liquid) {
-          (9 at 5).healEffect()
-          (6 at 4).build(Blocks.reinforcedConduit)
-          (6 at 5).label("输入水", 3f)
-          (8 at 7).build(Blocks.reinforcedConduit, 1)
-          (10 at 7).label("输出", 3f)
-          (8 at 3).build(Blocks.reinforcedConduit, 3)
-          (10 at 3).label("输出", 3f)
+          at(9, 5).healEffect()
+          at(6, 4).build(Blocks.reinforcedConduit)
+          at(6, 5).label("输入水", 3f)
+          at(8, 7).build(Blocks.reinforcedConduit, 1)
+          at(10, 7).label("输出", 3f)
+          at(8, 3).build(Blocks.reinforcedConduit, 3)
+          at(10, 3).label("输出", 3f)
         }
         frame(500f) {
-          (6 at 4).healEffect()
-          (8 at 7).healEffect()
-          (8 at 3).healEffect()
+          at(6, 4).healEffect()
+          at(8, 7).healEffect()
+          at(8, 3).healEffect()
         }
       }
     }

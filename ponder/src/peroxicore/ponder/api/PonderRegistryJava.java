@@ -21,16 +21,16 @@ public class PonderRegistryJava {
                     11,
                     w -> {
                       w.fillFloor(Blocks.rhyolite);
-                      w.fillAround(4, 3, 3, Blocks.rhyoliteVent);
-                      w.fillAround(4, 7, 3, Blocks.rhyoliteVent);
-                      w.focus(8, 5, 5);
+                      w.at(4, 3).around3().fill(Blocks.rhyoliteVent);
+                      w.at(4, 7).around3().fill(Blocks.rhyoliteVent);
+                      w.at(8, 5).focus(5);
                     });
                 kf.frame(
                     50f,
                     f -> {
                       Weathers.rain.create();
-                      f.build(8, 5, Blocks.electrolyzer);
-                      f.label(9, 5, "电解机", 4f);
+                      f.at(8, 5).build(Blocks.electrolyzer);
+                      f.at(9, 5).label("电解机", 4f);
                       UnitTypes.flare.spawn(Team.get(2), 24f, 40f);
                     });
               });

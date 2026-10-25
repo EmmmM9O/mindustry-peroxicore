@@ -152,18 +152,18 @@ object PonderRecorder {
     initial.forEach { (id, state) ->
       val x = id % width
       val y = id / width
-      if (state.floor != "air" && state.floor != commonFloor) out.append("      ($x at $y).setFloor(${blockExpression(state.floor)})\n")
-      if (state.block != "air") out.append("      ($x at $y).setBlock(${blockExpression(state.block)}, ${state.rotation})\n")
+      if (state.floor != "air" && state.floor != commonFloor) out.append("      at($x, $y).setFloor(${blockExpression(state.floor)})\n")
+      if (state.block != "air") out.append("      at($x, $y).setBlock(${blockExpression(state.block)}, ${state.rotation})\n")
     }
     out.append("    }\n")
     actions.groupBy { it.tick }.toSortedMap().forEach { (tick, group) ->
       out.append("    frame(${formatFloat(tick)}) {\n")
       group.forEach { action ->
         when (action) {
-          is RecordedAction.Place -> out.append("      (${action.x} at ${action.y}).setBlock(${blockExpression(action.block)}, ${action.rotation})\n")
-          is RecordedAction.Remove -> out.append("      (${action.x} at ${action.y}).setBlock(Blocks.air)\n")
-          is RecordedAction.Floor -> out.append("      (${action.x} at ${action.y}).setFloor(${blockExpression(action.floor)})\n")
-          is RecordedAction.Configure -> out.append("      (${action.x} at ${action.y}).configure(${configExpression(action.value)})\n")
+          is RecordedAction.Place -> out.append("      at(${action.x}, ${action.y}).setBlock(${blockExpression(action.block)}, ${action.rotation})\n")
+          is RecordedAction.Remove -> out.append("      at(${action.x}, ${action.y}).setBlock(Blocks.air)\n")
+          is RecordedAction.Floor -> out.append("      at(${action.x}, ${action.y}).setFloor(${blockExpression(action.floor)})\n")
+          is RecordedAction.Configure -> out.append("      at(${action.x}, ${action.y}).configure(${configExpression(action.value)})\n")
         }
       }
       out.append("    }\n")

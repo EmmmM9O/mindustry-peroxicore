@@ -42,6 +42,7 @@ object Library {
   const val autoServiceKsp =
     "dev.zacsweers.autoservice:auto-service-ksp:${Versions.autoServiceKsp}"
   const val kotlinpoet = "com.squareup:kotlinpoet:${Versions.kotlinpoet}"
+  const val javapoet = "com.palantir.javapoet:javapoet:0.22.0"
   const val kotlinpoetKsp = "com.squareup:kotlinpoet-ksp:${Versions.kotlinpoet}"
   val compiler = "org.jetbrains.kotlin:kotlin-compiler-embeddable:${Versions.kotlin}"
   val gradleApi = "org.jetbrains.kotlin:kotlin-gradle-plugin-api:${Versions.kotlin}"

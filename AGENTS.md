@@ -18,7 +18,7 @@ For Mindustry and its engine Arc and Lwjgl its source can be found in `tmp/`
 
 `README.md` is useless for you.Do not read unless the task require.
 
-Keep changes narrow, preserve behavior unless the task explicitly requires otherwise, and avoid style-only churn.
+In order to save token,do not read my source only to imitate my style.
 
 ## Root Treemap
 

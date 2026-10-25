@@ -61,7 +61,7 @@ subprojects {
 
   sourceSets {
     main {
-      java.srcDirs("src", "build/generated/java")
+      java.srcDirs("src", "build/generated/java", "build/generated/ksp/main/java")
     }
   }
 
@@ -80,7 +80,9 @@ subprojects {
       generatedSourceDirs =
         generatedSourceDirs +
             file("build/generated/ksp/main/kotlin") +
-            file("build/generated/ksp/test/kotlin")
+            file("build/generated/ksp/main/java") +
+            file("build/generated/ksp/test/kotlin") +
+            file("build/generated/ksp/test/java")
     }
   }
   repositories {

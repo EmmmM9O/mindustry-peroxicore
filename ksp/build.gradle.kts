@@ -6,6 +6,7 @@ dependencies {
   ksp(Library.autoServiceKsp)
 
   implementation(Library.kotlinpoet)
+  implementation(Library.javapoet)
   implementation(Library.kotlinpoetKsp)
 
   implementation(Library.mindustry)

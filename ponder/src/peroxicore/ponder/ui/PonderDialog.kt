@@ -224,7 +224,7 @@ class TimelineBar : Element() {
     font.cache.addText(
       barName,
       x + width / 2f - lay.width / 2f,
-      y + height / 2f + lay.height / 2f + 1
+      y + height / 2f + lay.height / 2f + 9
     )
     font.cache.draw(parentAlpha)
 
@@ -432,7 +432,7 @@ open class PonderDialog :
       .size(marginSize)
       .get()
       .resizeImage(marginSize)
-    buttons.add(timelineBar).height(marginSize).growX()
+    buttons.add(timelineBar).height(marginSize).growX().marginLeft(30f).marginRight(30f)
     buttons.add(rightBar).right()
   }
 }
