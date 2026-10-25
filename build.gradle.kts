@@ -1,6 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.*
-import org.jetbrains.kotlin.gradle.tasks.*
 import java.util.*
+import org.jetbrains.kotlin.gradle.tasks.*
 
 Config.rootDir = project.rootDir
 
@@ -19,6 +19,7 @@ fun getProperty(key: String): String? {
 }
 
 Config.githubMirror = getProperty("GITHUB_MIRROR") ?: ""
+
 Config.buildNative = getProperty("BUILD_NATIVE") == "true"
 
 plugins {
@@ -29,6 +30,7 @@ plugins {
   kotlin("jvm")
   id("com.google.devtools.ksp") version Versions.ksp
 }
+
 val modVersion = getProperty("modVersion") ?: System.getenv("MOD_VERSION") ?: "0"
 
 subprojects {
@@ -79,10 +81,10 @@ subprojects {
       //      sourceDirs = sourceDirs + file("build/generated/ksp/main/kotlin")
       generatedSourceDirs =
         generatedSourceDirs +
-            file("build/generated/ksp/main/kotlin") +
-            file("build/generated/ksp/main/java") +
-            file("build/generated/ksp/test/kotlin") +
-            file("build/generated/ksp/test/java")
+          file("build/generated/ksp/main/kotlin") +
+          file("build/generated/ksp/main/java") +
+          file("build/generated/ksp/test/kotlin") +
+          file("build/generated/ksp/test/java")
     }
   }
   repositories {
@@ -137,67 +139,74 @@ subprojects {
     }
 
     withType<ShadowJar> {
-      if(project.path != ":core") {
+      if (project.path != ":core") {
         dependencies {
           exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib.*"))
-	        exclude(dependency("org.jetbrains.kotlin:kotlin-reflect.*"))
+          exclude(dependency("org.jetbrains.kotlin:kotlin-reflect.*"))
         }
       }
       archiveFileName.set("${project.packageName()}-origin.jar")
       from("assets/") { include("**") }
     }
 
-    register<JavaExec>("d8Compile") {
-      description = "Compile Dex"
-      dependsOn("shadowJar")
+    val pkgName = project.packageName()
+    val shadowJarTask = named<Jar>("shadowJar")
 
-      doFirst {
-        val r8Jar =
-          configurations.compileClasspath.get().files.find {
-            it.name.startsWith("r8-") && it.extension == "jar"
-          } ?: throw GradleException("No R8.jar")
+    val dexJar = layout.buildDirectory.file("libs/$pkgName-dex.jar")
+    val originJar = shadowJarTask.flatMap { it.archiveFile }
 
-        classpath(files(r8Jar))
+    val d8Compile =
+      register<JavaExec>("d8Compile") {
+        description = "Compile Dex"
+        group = "deployment"
+
+        inputs.files(configurations.compileClasspath)
+        inputs.file(originJar)
+        outputs.file(dexJar)
+
         mainClass.set("com.android.tools.r8.D8")
-        val argsList = mutableListOf<String>()
-        // argsList.add("--lib")
-        // argsList.add(File(platformRoot, "android.jar").absolutePath)
-        configurations.compileClasspath.get().files.forEach { file ->
-          if (
-            file.isFile &&
-            file.extension == "jar" &&
-            !file.name.startsWith("r8-") // && file.name.startsWith("Mindustry")
-          ) {
-            argsList.add("--classpath")
-            argsList.add(file.absolutePath)
+        workingDir = layout.buildDirectory.dir("libs").get().asFile
+        classpath = files()
+
+        doFirst {
+          val r8Jar =
+            configurations.compileClasspath.get().files.find {
+              it.name.startsWith("r8-") && it.extension == "jar"
+            } ?: throw GradleException("No R8.jar")
+          classpath = files(r8Jar)
+
+          val argsList = mutableListOf<String>()
+          configurations.compileClasspath.get().files.forEach { f ->
+            if (f.isFile && f.extension == "jar" && !f.name.startsWith("r8-")) {
+              argsList += listOf("--classpath", f.absolutePath)
+            }
           }
+          argsList +=
+            listOf(
+              "--min-api",
+              "26",
+              "--output",
+              dexJar.get().asFile.absolutePath,
+              originJar.get().asFile.absolutePath,
+            )
+          args = argsList
         }
-
-        argsList.add("--min-api")
-        argsList.add("26")
-        argsList.add("--output")
-        argsList.add("${project.packageName()}-dex.jar")
-        argsList.add("${project.packageName()}-origin.jar")
-
-        args = argsList
-        workingDir =
-          layout.buildDirectory
-            .dir("libs")
-            .get()
-            .asFile
       }
-    }
-    register<Jar>("deploy") {
-      description = "Build Mod"
-      group = "deployment"
-      dependsOn("d8Compile")
-      duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-      archiveFileName.set("${project.packageName()}.jar")
-      from(
-        zipTree("${layout.buildDirectory.get()}/libs/${project.packageName()}-origin.jar"),
-        zipTree("${layout.buildDirectory.get()}/libs/${project.packageName()}-dex.jar")
-      )
-    }
+
+    val deploy =
+      register<Jar>("deploy") {
+        description = "Build Mod"
+        group = "deployment"
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        archiveFileName.set("$pkgName.jar")
+
+        from(zipTree(originJar))
+
+        from(zipTree(dexJar))
+        dependsOn(d8Compile)
+
+        inputs.files(originJar, dexJar)
+      }
   }
   group = "com.github.emmmM9O"
   version = "main-SNAPSHOT"

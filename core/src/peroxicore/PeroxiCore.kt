@@ -18,7 +18,7 @@ class PeroxiCore : Mod() {
       logConfig {}
       .logger {
         minimumLevel(LogLevel.DEBUG)
-        formatter { "$level|$message|$location" }
+//        formatter { "$level|$message|$location" }
         name("PeroxiCore")
         arcHandlerAppender()
       }
