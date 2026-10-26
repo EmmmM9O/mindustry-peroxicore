@@ -25,7 +25,7 @@ object PonderRegistry {
         }
         frame(50f) {
           Weathers.rain.create()
-          at(8, 5).build(Blocks.electrolyzer)
+          at(8, 5).build(Blocks.electrolyzer, config = Blocks.electrolyzer.nextConfig())
           label("电解机", 4f).at(9, 5)
           UnitTypes.flare.spawn(Team.get(2), 6 * 4f, 5 * 8f)
         }

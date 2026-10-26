@@ -85,8 +85,8 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
 
   fun Region.fill(
     block: Block,
-    rotation: Int,
-    team: Team?,
+    rotation: Int = 0,
+    team: Team? = null,
   ) {
     if (block is Floor) fillFloor(block)
   }
@@ -105,11 +105,10 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
     rotation: Int,
   ): Unit = this.setBlock(block, rotation, null)
 
-  @ToAction
   fun Point.setBlock(
     block: Block,
-    rotation: Int,
-    team: Team?,
+    rotation: Int = 0,
+    team: Team? = null,
   ) {
     tiles.get(x, y).setBlock(block, team ?: this@WorldPonderActionScopeTemplate.team, rotation)
   }
@@ -123,11 +122,10 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
     rotation: Int,
   ): Unit = this.set(block, rotation, null)
 
-  @ToAction
   fun Point.set(
     block: Block,
-    rotation: Int,
-    team: Team?,
+    rotation: Int = 0,
+    team: Team? = null,
   ) {
     if (block is Floor) setFloor(block) else setBlock(block, rotation, team)
   }
@@ -153,8 +151,8 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
 
   fun Vec.label(
     info: String,
-    duration: Float,
-    flags: Byte,
+    duration: Float = 2f,
+    flags: Byte = WorldLabel.flagOutline,
   ) {
     if (jump) return
     PonderUI.showLabel(
@@ -175,11 +173,10 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
     duration: Float,
   ): Unit = this.label(info, duration, WorldLabel.flagOutline)
 
-  @ToAction
   fun Point.label(
     info: String,
-    duration: Float,
-    flags: Byte,
+    duration: Float = 2f,
+    flags: Byte = WorldLabel.flagOutline,
   ) {
     unit().label(info, duration, flags)
   }
@@ -191,8 +188,7 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
   @ToAction
   fun Point.placeEffect(): Unit = this.placeEffect(-1)
 
-  @ToAction
-  fun Point.placeEffect(size: Int) {
+  fun Point.placeEffect(size: Int = -1) {
     if (jump) return
     tiles.get(x, y)?.build?.also {
       it.block.placeEffect.at(
@@ -211,8 +207,7 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
   @ToAction
   fun Point.healEffect(): Unit = this.healEffect(Pal.accent)
 
-  @ToAction
-  fun Point.healEffect(color: Color) {
+  fun Point.healEffect(color: Color = Pal.accent) {
     if (jump) return
     tiles.get(x, y)?.build?.also {
       Fx.healBlockFull.at(it.x, it.y, it.block.size.toFloat(), color, it.block)
@@ -232,11 +227,10 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
     rotation: Int,
   ): Unit = this.plan(block, rotation, null)
 
-  @ToAction
   fun Point.plan(
     block: Block,
-    rotation: Int,
-    config: Any?,
+    rotation: Int = 0,
+    config: Any? = null,
   ) {
     if (input.validPlace(x, y, block, rotation)) {
       builder?.also {
@@ -281,13 +275,12 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
   ): Promise<Self, Building?> =
     this.build(block, rotation, duration, team, null)
 
-  @ToAction
   fun Point.build(
     block: Block,
-    rotation: Int,
-    duration: Float,
-    team: Team?,
-    config: Any?,
+    rotation: Int = 0,
+    duration: Float = 30f,
+    team: Team? = null,
+    config: Any? = null,
   ): Promise<Self, Building?> {
     val promise = Promise<Self, Building?>()
     val teamv = team ?: this@WorldPonderActionScopeTemplate.team
