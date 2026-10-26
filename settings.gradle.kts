@@ -18,7 +18,7 @@ include(
   ":lwjgl:platform:expects",
   ":lwjgl:platform:android",
   ":lwjgl:platform:desktop",
-  ":lwjgl:opus",
+//  ":lwjgl:opus", TOBEFix
   ":lwjgl:ktx",
   ":lwjgl:font",
   ":lwjgl:natives",
