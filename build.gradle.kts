@@ -236,7 +236,7 @@ tasks.register<Copy>("deployAll") {
     val sub = project(it)
     from("${sub.layout.buildDirectory.get()}/libs/${sub.packageName()}.jar")
   }
-  val platformProjects = listOf(":lwjgl", ":lwjgl:opus", ":lwjgl:ktx", ":lwjgl:font")
+  val platformProjects = listOf(":lwjgl", ":lwjgl:ktx", ":lwjgl:font")
   deployTasks = platformProjects.map { "$it:deploy" }
   dependsOn(deployTasks)
   deployTasks.forEach { mustRunAfter(it) }
