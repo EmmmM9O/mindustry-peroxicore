@@ -32,7 +32,7 @@ object PonderRegistry {
         frame(200f) {
           at(4, 3).focus(5)
           at(5, 3).label("涡轮冷凝器 发电", 4f)
-          build(Blocks.ventCondenser)
+          build(Blocks.ventCondenser, config = Blocks.ventCondenser.nextConfig())
             .at(4, 3)
             .thenChain {
               at(4, 7).focus(5)

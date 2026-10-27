@@ -111,18 +111,26 @@ class TemplateApiProcessor(
           )
           return@forEach
         }
-        function.parameters
-          .firstOrNull { it.hasDefault }
-          ?.let {
+        val defaults =
+          when {
+            function.hasAnnotation(Annotations.ToAction) ->
+              annotationStringArgs(function, Annotations.ToAction, "defaults")
+            function.hasAnnotation(Annotations.ActionEnd) ->
+              annotationStringArgs(function, Annotations.ActionEnd, "defaults")
+            else -> emptyList()
+          }
+        function.parameters.forEachIndexed { index, parameter ->
+          if (parameter.hasDefault && defaults.getOrNull(index).isNullOrEmpty()) {
             logger.warn(
-              "Default parameter '${it.name?.asString()}' on action function " +
-                "${function.simpleName.asString()} is ignored by the generated action API. " +
-                "Declare explicit overloads in the template instead.",
+              "Default parameter '${parameter.name?.asString()}' on action function " +
+                "${function.simpleName.asString()} has no annotation default at index $index. " +
+                "Add it to @ActionEnd/@ToAction defaults.",
               function,
             )
           }
+        }
         val name = function.simpleName.asString()
-        val params = function.paramsKotlin(typeParams)
+        val params = function.paramsKotlin(typeParams, defaults)
         val args = function.argNames()
         val receiverAlias = function.extensionReceiver?.resolve()?.actionableAlias(aliases)
         val returnAlias = function.returnType?.resolve()?.actionableAlias(aliases)
@@ -402,9 +410,15 @@ class TemplateApiProcessor(
   private fun stringArgs(
     symbol: KSAnnotated,
     name: String,
+  ): List<String> = annotationStringArgs(symbol, Annotations.ApiTemplate, name)
+
+  private fun annotationStringArgs(
+    symbol: KSAnnotated,
+    annotationFqName: String,
+    name: String,
   ): List<String> {
     val value =
-      annotation(symbol, Annotations.ApiTemplate)
+      annotation(symbol, annotationFqName)
         ?.arguments
         ?.firstOrNull { it.name?.asString() == name }
         ?.value
@@ -662,11 +676,25 @@ class TemplateApiProcessor(
     else ParameterizedTypeName.get(raw as ClassName, *args.toTypedArray())
   }
 
-  private fun KSFunctionDeclaration.paramsKotlin(typeParams: Map<String, String>): String =
-    parameters.joinToString(", ") { parameter ->
-      val name = parameter.name?.asString() ?: "arg"
-      "$name: ${renderKotlinType(parameter.type, typeParams)}"
-    }
+  private fun KSFunctionDeclaration.paramsKotlin(
+    typeParams: Map<String, String>,
+    defaults: List<String> = emptyList(),
+  ): String =
+    parameters
+      .mapIndexed { index, parameter ->
+        val name = parameter.name?.asString() ?: "arg"
+        val default = defaults.getOrNull(index)?.takeIf { it.isNotEmpty() }
+        buildString {
+          append(name)
+          append(": ")
+          append(renderKotlinType(parameter.type, typeParams))
+          if (default != null) {
+            append(" = ")
+            append(default)
+          }
+        }
+      }
+      .joinToString(", ")
 
   private fun KSFunctionDeclaration.argNames(): String =
     parameters.joinToString(", ") { it.name?.asString() ?: "arg" }

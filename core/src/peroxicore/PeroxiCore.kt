@@ -8,10 +8,12 @@ import peroxicore.mod.*
 import peroxicore.util.*
 import peroxicore.util.handler.*
 
+
 @ModConfig(
   name = "peroxicore",
   displayName = "PeroxiCore",
 )
+@ImportPeroxiCore
 class PeroxiCore : Mod() {
   companion object {
     val log: Logger =
@@ -26,7 +28,10 @@ class PeroxiCore : Mod() {
 
   init {
     EventsHandler.setup()
-    Vars.platform = POCPlatform(Vars.platform, this.javaClass.classLoader)
+    if(Vars.platform.javaClass.kotlin.qualifiedName == "peroxicore.mod.POEmbedPlatform"){
+      Log.info("PeroxiCore Skip platform replace")
+    }
+    else Vars.platform = POCPlatform(Vars.platform, this.javaClass.classLoader)
 
     Log.level = Log.LogLevel.debug
     Log.logger = Log.LogHandler { level, text ->
@@ -34,6 +39,7 @@ class PeroxiCore : Mod() {
         level(level.toLogLevel())
         mark(Marks.log)
         message(text)
+        skip(PeroxiCore::class)
       }
     }
 

@@ -50,6 +50,10 @@ open class LogEventBuilder(
   /** Print this event's [SourceLocation] even when the logger is configured not to. */
   var printLocation: Boolean = false
 
+  var skip: Int = 0
+
+  var skipFunc: ((String)->Boolean)? = null
+
   /**
    * Suppress repeated events from the same call-site within [LoggerConfig.throttlePeriodMillis].
    */
@@ -85,8 +89,22 @@ class LogEventDsl : LogEventBuilder() {
     this.data = data
   }
 
+  @JvmName("enableLocation")
   fun location(enabled: Boolean = true) {
     this.printLocation = enabled
+  }
+
+  fun location(skip: Int = 0) {
+    this.printLocation = true
+    this.skip = skip
+  }
+
+  fun skipIf(func: (String) -> Boolean) {
+    this.skipFunc = func
+  }
+
+  fun skip(kClass: KClass<*>) {
+    this.skipFunc = { it == kClass.qualifiedName }
   }
 
   fun throttle(key: Any? = null) {
@@ -198,7 +216,7 @@ abstract class Logger {
     val loggerConfig = config
     val displayLocation = builder.printLocation || loggerConfig.printLocation
     val location =
-      if (displayLocation || builder.throttled) loggerConfig.sourceLocator.locate()
+      if (displayLocation || builder.throttled) loggerConfig.sourceLocator.locate(builder.skip, builder.skipFunc)
       else SourceLocation.UNKNOWN
     if (builder.throttled && !shouldLog(builder.throttleKey ?: location)) return
     val event =

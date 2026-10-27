@@ -45,13 +45,29 @@ annotation class Actionable(
  * For a function without an extension receiver whose return type is [Actionable], the generator
  * emits "fun <Res> XAction<Res>.name(...)", which runs the action at the produced position. This is
  * what allows "build(block).at(x, y)".
+ *
+ * KSP cannot read Kotlin default value expressions. [defaults] carries them by parameter index so
+ * the generated action overload keeps the same optional parameters. Use fully qualified names in
+ * expressions (for example "mindustry.gen.WorldLabel.flagOutline") because the generated file is in
+ * another package. An empty entry means that parameter has no default.
  */
-@Target(AnnotationTarget.FUNCTION) @Retention(AnnotationRetention.BINARY) annotation class ActionEnd
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.BINARY)
+annotation class ActionEnd(
+  val defaults: Array<String> = [],
+)
 
 /**
  * Marks an action function that should also be callable before its position is known.
  *
  * For "fun Point.label(text: String)" the generator emits "fun label(text: String):
  * PointAction<Unit> = { this.label(text) }", so callers can write "label(text).at(x, y)".
+ *
+ * [defaults] uses the same index based format as [ActionEnd] and lets callers use named arguments
+ * on the generated creator, for example "build(block, config = value).at(x, y)".
  */
-@Target(AnnotationTarget.FUNCTION) @Retention(AnnotationRetention.BINARY) annotation class ToAction
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.BINARY)
+annotation class ToAction(
+  val defaults: Array<String> = [],
+)

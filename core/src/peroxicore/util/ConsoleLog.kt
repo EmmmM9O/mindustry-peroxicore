@@ -29,8 +29,8 @@ private val defaultTimeText: TimeFormatter = timeFormat {
 val DefaultFormatter: LogFormatter = {
   buildString {
     append(defaultTimeText(time))
-    mark?.name()?.let { append('[').append(it).append(']') }
-    logger.name?.let { append('[').append(it).append(']') }
+//    mark?.name()?.let { append('[').append(it).append(']') }
+//    logger.name?.let { append('[').append(it).append(']') }
     append('[').append(level.label).append("]:").append(message.orEmpty())
     if (location.isKnown) append(" (").append(location).append(')')
     cause?.let { appendCause(it) }

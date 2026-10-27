@@ -14,16 +14,19 @@ import mindustry.mod.*
 import mindustry.mod.Mods.*
 import universe.util.reflect.*
 
+import peroxicore.mod.*
+
 object PeroxiCoreEmbed {
   val metaFiles = arrayOf("mod.json", "mod.hjson", "plugin.json", "plugin.hjson")
   val loadedMods = HashSet<String>()
   val loadMod: Mods.(Fi, Boolean, Boolean) -> LoadedMod = accessMethod3("loadMod")
   val mapping = ObjectMap<String, Fi>()
-  val loadList = arrayOf("peroxicore", "peroxicore-ponder")
+  val loadList = arrayOf("peroxicore-embed", "peroxicore-ponder")
 
   val embedDir = dataDirectory.child("peroxicore_embed/")
 
   fun setup() {
+    Vars.platform = POEmbedPlatform(Vars.platform, this.javaClass.classLoader)
     checkModList()
     embedDir.mkdirs()
     loadList.forEach { mod ->

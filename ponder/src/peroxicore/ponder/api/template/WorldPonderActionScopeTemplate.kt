@@ -105,6 +105,7 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
     rotation: Int,
   ): Unit = this.setBlock(block, rotation, null)
 
+  @ToAction(defaults = ["", "0", "null"])
   fun Point.setBlock(
     block: Block,
     rotation: Int = 0,
@@ -122,6 +123,7 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
     rotation: Int,
   ): Unit = this.set(block, rotation, null)
 
+  @ToAction(defaults = ["", "0", "null"])
   fun Point.set(
     block: Block,
     rotation: Int = 0,
@@ -173,6 +175,7 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
     duration: Float,
   ): Unit = this.label(info, duration, WorldLabel.flagOutline)
 
+  @ToAction(defaults = ["", "2f", "mindustry.gen.WorldLabel.flagOutline"])
   fun Point.label(
     info: String,
     duration: Float = 2f,
@@ -188,6 +191,7 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
   @ToAction
   fun Point.placeEffect(): Unit = this.placeEffect(-1)
 
+  @ToAction(defaults = ["-1"])
   fun Point.placeEffect(size: Int = -1) {
     if (jump) return
     tiles.get(x, y)?.build?.also {
@@ -207,6 +211,7 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
   @ToAction
   fun Point.healEffect(): Unit = this.healEffect(Pal.accent)
 
+  @ToAction(defaults = ["mindustry.graphics.Pal.accent"])
   fun Point.healEffect(color: Color = Pal.accent) {
     if (jump) return
     tiles.get(x, y)?.build?.also {
@@ -227,6 +232,7 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
     rotation: Int,
   ): Unit = this.plan(block, rotation, null)
 
+  @ToAction(defaults = ["", "0", "null"])
   fun Point.plan(
     block: Block,
     rotation: Int = 0,
@@ -275,6 +281,7 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
   ): Promise<Self, Building?> =
     this.build(block, rotation, duration, team, null)
 
+  @ToAction(defaults = ["", "0", "30f", "null", "null"])
   fun Point.build(
     block: Block,
     rotation: Int = 0,

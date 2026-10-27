@@ -7,10 +7,8 @@ dependencies {
 }
 
 val embedJars = tasks.register<Copy>("embedJars") {
-  val embeds = arrayOf(":core", ":ponder")
-  embeds.forEach {
-    from(project(it).tasks.named<Jar>("deploy").flatMap { it.archiveFile })
-  }
+  from(project(":core").tasks.named<Jar>("deployEmbed").flatMap { it.archiveFile })
+  from(project(":ponder").tasks.named<Jar>("deploy").flatMap { it.archiveFile })
   into(layout.buildDirectory.dir("generated/resources"))
 }
 

@@ -47,16 +47,16 @@ interface SourceLocator {
    *
    * @param skip number of extra user frames to skip, useful when wrapping the logger.
    */
-  fun locate(skip: Int = 0): SourceLocation
+  fun locate(skip: Int = 0, checkSkip: ((String)->Boolean)? = null): SourceLocation
 }
 
 object StackTraceSourceLocator : SourceLocator {
-  override fun locate(skip: Int): SourceLocation {
+  override fun locate(skip: Int, checkSkip: ((String)->Boolean)?): SourceLocation {
     val stack = Thread.currentThread().stackTrace
     var remaining = skip
     for (element in stack) {
       val className = element.className
-      if (isLoggerFrame(className)) continue
+      if (isLoggerFrame(className) || (checkSkip?.invoke(className) ?: true)) continue
       if (remaining > 0) {
         remaining--
         continue
@@ -84,5 +84,5 @@ object StackTraceSourceLocator : SourceLocator {
 }
 
 object NoopSourceLocator : SourceLocator {
-  override fun locate(skip: Int): SourceLocation = SourceLocation.UNKNOWN
+  override fun locate(skip: Int, checkSkip: ((String)->Boolean)?): SourceLocation = SourceLocation.UNKNOWN
 }
