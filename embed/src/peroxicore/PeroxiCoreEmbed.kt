@@ -14,6 +14,8 @@ import mindustry.mod.*
 import mindustry.mod.Mods.*
 import universe.util.reflect.*
 
+import java.util.Locale
+
 import peroxicore.mod.*
 
 object PeroxiCoreEmbed {
@@ -63,6 +65,9 @@ object PeroxiCoreEmbed {
       Log.info("PeroxiCoreEmbed Skip ${file} due to already loaded")
       return
     }
+
+    val baseName = meta.name.lowercase(Locale.ROOT).replace(" ", "-")
+    Core.settings.put("mod-$baseName-enabled", true)
 
     try {
       val mod = mods.loadMod(file, false, true)
