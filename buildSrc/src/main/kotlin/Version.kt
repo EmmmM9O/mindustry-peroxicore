@@ -33,6 +33,7 @@ object Versions {
   val kotlin by lazy { Config.get("kotlinVersion") }
   const val mindustry = "v160.4"
   const val lwjgl = "3.3.6"
+  const val antlr = "1.0.14"
 }
 
 object Library {
@@ -52,4 +53,5 @@ object Library {
   const val lwjglBom = "org.lwjgl:lwjgl-bom:${Versions.lwjgl}"
   fun lwjglModule(name: String) = "org.lwjgl:lwjgl-$name"
   fun lwjglVersion(name: String) = "org.lwjgl:lwjgl-$name:${Versions.lwjgl}"
+
 }

@@ -1,4 +1,9 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.*
+import com.strumenta.antlrkotlin.gradle.*
+
+plugins {
+  id("com.strumenta.antlr-kotlin")
+}
 
 dependencies {
   compileOnlyApi(Library.mindustry)
@@ -12,6 +17,32 @@ dependencies {
 
   ksp(project(":ksp"))
   kotlinCompilerPluginClasspath(project(":compiler-plugin"))
+
+  implementation("com.strumenta:antlr-kotlin-runtime:${Versions.antlr}")
+}
+
+val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotlinGrammarSource") {
+  dependsOn("cleanGenerateKotlinGrammarSource")
+
+  source = fileTree(layout.projectDirectory.dir("antlr")) {
+    include("**/*.g4")
+  }
+
+  val pkgName = "peroxicore.parsers"
+  packageName = pkgName
+
+  arguments = listOf("-visitor")
+
+  val outDir = "generated/antlr/${pkgName.replace(".", "/")}"
+  outputDirectory = layout.buildDirectory.dir(outDir).get().asFile
+}
+
+kotlin {
+  sourceSets {
+    getByName("main") {
+      kotlin.srcDir(generateKotlinGrammarSource)
+    }
+  }
 }
 
 tasks {

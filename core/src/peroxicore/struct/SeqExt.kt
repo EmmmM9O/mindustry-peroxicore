@@ -15,11 +15,11 @@ fun <T> Seq<T>.putOrGrow(id: Int, value: T): Seq<T> = apply {
   require(id >= 0) { "id must be >= 0: $id" }
 
   if (size > id) {
-    set(id, value as T)
+    set(id, value)
   } else {
     ensureCapacity(id + 1 - size)
     while (size < id) add(null as T)
-    add(value as T)
+    add(value)
   }
 }
 
@@ -39,7 +39,7 @@ fun <T> Seq<T>.getOrPutGrow(id: Int, value: () -> T): T = apply {
 
   ensureCapacity(id + 1 - size)
   while (size < id) add(null as T)
-  add(value() as T)
+  add(value())
 }
   .get(id)
 

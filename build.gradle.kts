@@ -29,6 +29,7 @@ plugins {
   idea
   kotlin("jvm")
   id("com.google.devtools.ksp") version Versions.ksp
+  id("com.strumenta.antlr-kotlin") version Versions.antlr
 }
 
 val modVersion = getProperty("modVersion") ?: System.getenv("MOD_VERSION") ?: "0"
