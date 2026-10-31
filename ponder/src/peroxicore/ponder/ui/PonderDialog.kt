@@ -286,42 +286,6 @@ open class PonderDialog :
         }.size(marginSize)
         .get()
         .resizeImage(marginSize)
-      /* Still TODO
-      bar
-        .button(Icon.settings, style1) {
-          if (PonderRecorder.active) PonderRecorder.stop() else {
-            hide()
-            // endDialog() restores the normal world; only then take the initial snapshot.
-            Core.app.post { PonderRecorder.start() }
-          }
-        }.size(marginSize)
-        .get()
-        .resizeImage(marginSize)
-      bar
-        .button(Icon.play, style1) {
-          if (!PonderRecorder.active) PonderRecorder.preview()
-        }.size(marginSize)
-        .get()
-        .resizeImage(marginSize)
-      bar
-        .button(Icon.copy, style1) {
-          if (PonderRecorder.hasRecording) {
-            val text = PonderRecorder.exportKotlinDsl()
-            Core.app.setClipboardText(text)
-            FullTextDialog().show("思索 Kotlin DSL（已复制）", text)
-          }
-        }.size(marginSize)
-        .get()
-        .resizeImage(marginSize)
-      bar
-        .button(Icon.save, style1) {
-          if (PonderRecorder.hasRecording) {
-            val text = PonderRecorder.exportKotlinDsl()
-            FileChooser.export("ponder-scene", "kt") { file -> file.writeString(text) }
-          }
-        }.size(marginSize)
-        .get()
-        .resizeImage(marginSize)*/
     }
   val drawable = TextureRegionDrawable(TextureRegion())
   val image = Image(drawable)

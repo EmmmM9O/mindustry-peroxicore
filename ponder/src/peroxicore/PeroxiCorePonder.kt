@@ -6,6 +6,7 @@ import mindustry.game.*
 import mindustry.mod.*
 import peroxicore.annotations.*
 import peroxicore.ponder.*
+import peroxicore.ponder.record.*
 
 @ModConfig(
   name = "peroxicore-ponder",
@@ -14,6 +15,9 @@ import peroxicore.ponder.*
 )
 @ImportPeroxiCore
 class PeroxiCorePonder : Mod() {
+  companion object {
+    lateinit var recordTools: RecordTools
+  }
   init {
     if (!Vars.clientLoaded) {
       if (!Vars.headless) {
@@ -22,7 +26,9 @@ class PeroxiCorePonder : Mod() {
         core.add(PonderCore)
       }
       Events.on(EventType.ClientLoadEvent::class.java) {
+        if (Vars.headless) return@on
         PonderCore.initPonder()
+        recordTools = RecordTools()
       }
     }
   }

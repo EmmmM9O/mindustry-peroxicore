@@ -13,14 +13,17 @@ class DebugTools : FloatingTable() {
   var visibleC = false
   val visButton: ImageButton
   val contentTable: Table
+  lateinit var buttonsBar: Table
+  val defSize = 48f
 
   init {
+    key = "peroxicore-debug-tools"
     reset()
     visButton =
       ImageButton(
         ImageButton.ImageButtonStyle(Styles.cleari).apply {
-          imageUp = Icon.eyeSmall
-          imageChecked = Icon.eyeOffSmall
+          imageUp = Icon.eyeOffSmall
+          imageChecked = Icon.eyeSmall
         }
       )
     visButton.changed {
@@ -35,21 +38,23 @@ class DebugTools : FloatingTable() {
         table.table().row()
         table
           .table { buttons ->
-            buttons.add(dragButton).size(48f)
-            buttons.add(visButton).size(48f)
+            buttonsBar = buttons
+            buttons.add(dragButton).size(defSize)
+            buttons.add(visButton).size(defSize)
           }
-          .height(48f)
+          .height(defSize)
           .center()
         table.table().row()
       }
       .uniformX()
       .uniformY()
-      .height(48f)
+      .height(defSize)
       .fill()
     row()
 
 
     add(contentTable).width(400f).height(400f)
     Core.scene.add(this)
+    loadPosition()
   }
 }

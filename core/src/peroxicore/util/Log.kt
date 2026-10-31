@@ -94,7 +94,7 @@ class LogEventDsl : LogEventBuilder() {
     this.printLocation = enabled
   }
 
-  fun location(skip: Int = 0) {
+  fun location(skip: Int) {
     this.printLocation = true
     this.skip = skip
   }
@@ -459,6 +459,7 @@ open class LoggerConfigDslBase : LoggerConfig() {
 
   fun printLocation(enabled: Boolean = true) {
     this.printLocation = enabled
+
   }
 
   fun sourceLocator(locator: SourceLocator) {

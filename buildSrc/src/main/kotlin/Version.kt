@@ -34,6 +34,7 @@ object Versions {
   const val mindustry = "v160.4"
   const val lwjgl = "3.3.6"
   const val antlr = "1.0.14"
+  const val jline = "3.30.17"
 }
 
 object Library {

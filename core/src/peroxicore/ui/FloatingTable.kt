@@ -1,5 +1,6 @@
 package peroxicore.ui
 
+import arc.*
 import arc.input.*
 import arc.math.*
 import arc.math.geom.*
@@ -13,6 +14,7 @@ import mindustry.ui.*
 open class FloatingTable() : Table() {
   val dragButton: ImageButton
   var dragging = false
+  var key = "floating-table"
 
   init {
     dragButton = ImageButton(Icon.move, Styles.cleari)
@@ -54,6 +56,13 @@ open class FloatingTable() : Table() {
         Mathf.clamp(pos.y, getPrefHeight() / 2f, parent.getHeight() - getPrefHeight() / 2f),
       )
     }
+  }
+
+  fun loadPosition(key: String = this.key) {
+    setPosition(
+      Core.settings.getInt("$key-x", Core.graphics.width / 2).toFloat(),
+      Core.settings.getInt("$key-x", Core.graphics.height / 2).toFloat()
+    )
   }
 
   fun positionParent(x: Float, y: Float) {

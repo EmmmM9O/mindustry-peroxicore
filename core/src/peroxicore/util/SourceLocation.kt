@@ -56,7 +56,7 @@ object StackTraceSourceLocator : SourceLocator {
     var remaining = skip
     for (element in stack) {
       val className = element.className
-      if (isLoggerFrame(className) || (checkSkip?.invoke(className) ?: true)) continue
+      if (isLoggerFrame(className) || (checkSkip?.invoke(className) ?: false)) continue
       if (remaining > 0) {
         remaining--
         continue

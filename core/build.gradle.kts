@@ -19,6 +19,7 @@ dependencies {
   kotlinCompilerPluginClasspath(project(":compiler-plugin"))
 
   implementation("com.strumenta:antlr-kotlin-runtime:${Versions.antlr}")
+  implementation("org.jline:jline:${Versions.jline}")
 }
 
 val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotlinGrammarSource") {
@@ -56,8 +57,14 @@ tasks {
         exclude(dependency("org.jetbrains.kotlin:kotlin-stdlib.*"))
         exclude(dependency("org.jetbrains.kotlin:kotlin-reflect.*"))
         exclude(dependency("com.github.EB-wilson.UniverseKit:.*:.*"))
+        exclude(dependency("org.jline:.*:.*"))
       }
       archiveFileName.set("${project.packageName()}-originEmbed.jar")
+      // The console is a standalone-JVM feature.  JLine is intentionally
+      // excluded from the Android embed artifact, so its classes go as well.
+      exclude("peroxicore/ciallo/CialloConsole*.class")
+      exclude("peroxicore/ciallo/CialloCompleter*.class")
+      exclude("peroxicore/ciallo/CialloHighlighter*.class")
       from("assets/") { include("**") }
       from(mainOutput)
       configurations = listOf(project.configurations.runtimeClasspath.get())
@@ -120,4 +127,12 @@ tasks {
       inputs.files(originJar, dexJar)
     }
 
+}
+
+tasks.withType<Jar>().configureEach {
+  if (name != "sourcesJar" && name != "javadocJar") {
+    manifest {
+      attributes["Main-Class"] = "peroxicore.Main"
+    }
+  }
 }

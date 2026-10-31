@@ -119,4 +119,8 @@ interface PositionScopeTemplate {
     val scale = if (width > height) min / height else min / width
     return width * scale to height * scale
   }
+
+  /*
+  fun String.schem() = Vars.schematics.readBase64(this)
+  */
 }

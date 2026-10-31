@@ -1,6 +1,7 @@
 package peroxicore.ponder.api.dsl
 
 import arc.scene.style.*
+import mindustry.game.*
 import peroxicore.ponder.*
 import peroxicore.ponder.scene.*
 
@@ -114,6 +115,20 @@ inline fun BaseTimelineScope.world(
   initializer(
     BaseTimelineInitializer(width, height) {
       val scope = BaseTimelineInitializerScope.scope
+      scope.block()
+    }
+  )
+}
+
+
+inline fun BaseTimelineScope.world(
+  schem: Schematic,
+  crossinline block: BaseTimelineInitializerScope.() -> Unit,
+) {
+  initializer(
+    BaseTimelineInitializer(schem.width, schem.height) {
+      val scope = BaseTimelineInitializerScope.scope
+      scope.apply { fill(schem) }
       scope.block()
     }
   )

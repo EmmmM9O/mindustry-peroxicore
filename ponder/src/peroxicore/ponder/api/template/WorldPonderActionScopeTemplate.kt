@@ -362,4 +362,34 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
   fun full() {
     camRect(fullTiles().camera())
   }
+
+  fun BuildPlan.build(team: Team? = null, duration: Float = 30f) {
+    at(x, y).build(block, rotation, duration, team, config)
+  }
+
+  fun BuildPlan.set(team: Team? = null) {
+    at(x, y).also {
+      it.set(block, rotation, team)
+      it.configure(config)
+    }
+  }
+
+  @ToAction
+  fun Point.set(schematic: Schematic) {
+    Vars.schematics.toPlans(schematic, x, y, false).each { it.set() }
+  }
+
+  @ToAction
+  fun Point.build(schematic: Schematic) {
+    Vars.schematics.toPlans(schematic, x, y, false).each { it.build() }
+  }
+
+  @ToAction
+  fun Point.lbBuild(schematic: Schematic) {
+    at(x + schematic.width / 2, y + schematic.height / 2).build(schematic)
+  }
+
+  fun fill(schematic: Schematic) {
+    at(schematic.width / 2, schematic.height / 2).set(schematic)
+  }
 }

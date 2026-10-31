@@ -2,15 +2,19 @@ package peroxicore
 
 import arc.*
 import arc.util.*
+import arc.graphics.*
+import arc.graphics.g2d.*
+
 import mindustry.*
 import mindustry.mod.*
+import mindustry.graphics.*
 import mindustry.game.*
 import peroxicore.annotations.*
 import peroxicore.ui.*
 import peroxicore.mod.*
+import peroxicore.input.*
 import peroxicore.util.*
 import peroxicore.util.handler.*
-
 
 @ModConfig(
   name = "peroxicore",
@@ -30,6 +34,8 @@ class PeroxiCore : Mod() {
       }
 
     lateinit var debugTools: DebugTools
+
+    lateinit var input: PeroxiCoreInput
   }
 
   init {
@@ -51,22 +57,16 @@ class PeroxiCore : Mod() {
 
     log.info { "Peroxicore Load" }
 
-    Events.run(EventType.ClientLoadEvent::class.java) {
-      debugTools = DebugTools()
-      Time.run(1f) {
-        debugTools.setPosition(
-            Core.graphics.width.toFloat() / 2f,
-            Core.graphics.height.toFloat() / 1.5f
-        )
-      }
-      debugTools.visible = debug
-
+    Events.on(EventType.ClientLoadEvent::class.java) {
       addSettings()
+      if (Vars.headless) return@on
+      debugTools = DebugTools()
+      debugTools.visible = debug
     }
   }
 
   fun addSettings(){
-    Vars.ui.settings.apply{
+    Vars.ui.settings.apply {
       dev.checkPref("peroxicore-debug", false) {
         debug = it
         debugTools.visible = it
@@ -74,7 +74,25 @@ class PeroxiCore : Mod() {
     }
   }
 
-  override fun init() {}
+  override fun init() {
+    if (Vars.headless) return
+    if (Vars.mobile) {
+      input = PeroxiCoreMobileInput()
+    }
+    Events.run(EventType.Trigger.drawOver, this::drawOver)
+    Events.run(EventType.Trigger.update, this::update)
+    input.add()
+  }
+
+  fun update() {
+    input.update()
+  }
+
+  fun drawOver() {
+    Draw.draw(Layer.overlayUI) {
+      input.drawTop()
+    }
+  }
 
   override fun loadContent() {}
 }
