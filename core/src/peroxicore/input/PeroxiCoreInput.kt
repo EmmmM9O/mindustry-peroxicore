@@ -23,6 +23,7 @@ import mindustry.input.Placement.*
 import mindustry.ui.*
 import mindustry.world.*
 import universe.util.reflect.*
+import kotlin.math.*
 
 enum class InputMode {
   none,
@@ -41,32 +42,48 @@ data class SelectionTask(
   var func: SelectionTaskFunc? = null,
 )
 
+fun interface TopRenderer {
+  fun render()
+}
+
 abstract class PeroxiCoreInput() : InputProcessor, GestureListener {
   lateinit var detector: GestureDetector
+  val topRenderers = mutableListOf<TopRenderer>()
+  val oriInput = Vars.control.input
 
   fun add() {
     detector = GestureDetector(20f, 0.5f, 0.3f, 0.15f, this)
     Core.input.inputMultiplexer.addProcessor(0, this)
     Core.input.inputMultiplexer.addProcessor(0, detector)
+
+    oriInput.inputLocks.add(
+      Boolp {
+        isSelectionAvailable()
+      }
+    )
   }
 
   open fun update() {}
 
-  open fun drawTop() {}
-
-  protected fun drawSelection(x1: Int, y1: Int, x2: Int, y2: Int, maxLength: Int) {
-    drawSelection(x1, y1, x2, y2, maxLength, Pal.accentBack, Pal.accent, null)
+  open fun drawTop() {
+    topRenderers.forEach {
+      it.render()
+    }
   }
 
-  protected fun drawSelection(
+  fun drawSelection(x1: Int, y1: Int, x2: Int, y2: Int, maxLength: Int = 325799325) {
+    drawSelection(x1, y1, x2, y2, Pal.accentBack, Pal.accent, null, maxLength)
+  }
+
+  fun drawSelection(
     x1: Int,
     y1: Int,
     x2: Int,
     y2: Int,
-    maxLength: Int,
     col1: Color,
     col2: Color,
     text: String?,
+    maxLength: Int = 325799325,
   ) {
     val result: NormalizeDrawResult =
       Placement.normalizeDrawArea(Blocks.air, x1, y1, x2, y2, false, maxLength, 1f)
@@ -94,8 +111,10 @@ abstract class PeroxiCoreInput() : InputProcessor, GestureListener {
 
       font.draw(
         "$text: $width" + "x" + "$height" + " (" + area + ")",
-        input.mouseWorldX() + (if (input.mouseWorldX() > x1 * tilesize) offset else -offset),
-        input.mouseWorldY() + (if (input.mouseWorldY() > y1 * tilesize) offset else -offset),
+//        input.mouseWorldX() + (if (input.mouseWorldX() > x1 * tilesize) offset else -offset),
+//        input.mouseWorldY() + (if (input.mouseWorldY() > y1 * tilesize) offset else -offset),
+        (result.x + result.x2) / 2f,
+        result.y + offset,
       )
 
       font.setColor(Color.white)
@@ -112,10 +131,10 @@ abstract class PeroxiCoreInput() : InputProcessor, GestureListener {
   fun isSelectionAvailable() = selectionTask.func != null
 
   fun selectionTask(
-    maxLength: Int = 325799325,
     col1: Color = Pal.accentBack,
     col2: Color = Pal.accent,
     text: String? = null,
+    maxLength: Int = 325799325,
     func: SelectionTaskFunc,
   ) {
     selectionTask.apply {
@@ -125,6 +144,11 @@ abstract class PeroxiCoreInput() : InputProcessor, GestureListener {
       this.text = text
       this.func = func
     }
+  }
+
+  fun invokeSelectTask(startX: Int, startY: Int, endX: Int, endY: Int) {
+    selectionTask.func?.finish(min(startX, endX), min(startY, endY), max(startX, endX), max(startY, endY))
+    selectionTask.func = null
   }
 
   fun world(x: Int, y: Int) = world(x.toFloat(), y.toFloat())

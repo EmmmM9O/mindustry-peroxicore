@@ -7,8 +7,10 @@ import arc.graphics.*
 import arc.graphics.g2d.*
 import arc.input.*
 import arc.input.GestureDetector.*
+import arc.math.*
 import arc.math.geom.*
 import arc.struct.*
+import arc.scene.ui.layout.*
 import arc.util.*
 import arc.util.pooling.*
 import mindustry.*
@@ -24,6 +26,7 @@ import mindustry.ui.*
 import mindustry.world.*
 
 class PeroxiCoreMobileInput : PeroxiCoreInput() {
+  val mdtInput = Vars.control.input as MobileInput
   var startX = 0
   var startY = 0
   var lastX = 0
@@ -37,6 +40,7 @@ class PeroxiCoreMobileInput : PeroxiCoreInput() {
     if (mode == InputMode.selecting) {
       lastX = tileX
       lastY = tileY
+      autoPan()
     }
   }
 
@@ -48,10 +52,10 @@ class PeroxiCoreMobileInput : PeroxiCoreInput() {
         startY,
         lastX,
         lastY,
-        selectionTask.maxLength,
         selectionTask.col1,
         selectionTask.col2,
         selectionTask.text,
+        selectionTask.maxLength,
       )
     }
   }
@@ -75,6 +79,7 @@ class PeroxiCoreMobileInput : PeroxiCoreInput() {
       startY = tile.y.toInt()
       lastX = startX
       lastY = startY
+      return true
     }
 
     return false
@@ -88,9 +93,44 @@ class PeroxiCoreMobileInput : PeroxiCoreInput() {
   ): Boolean {
     if (mode == InputMode.selecting) {
       mode = InputMode.none
-      selectionTask.func?.finish(startX, startY, lastX, lastY)
-      selectionTask.func = null
+      invokeSelectTask(startX, startY, lastX, lastY)
+      return true
     }
     return false
+  }
+
+  val vector = Vec2()
+  val edgePan = Scl.scl(60f)
+  val maxPanSpeed = 1.3f
+
+  protected fun autoPan() {
+    val screenX = Core.input.mouseX()
+    val screenY = Core.input.mouseY()
+
+    var panX = 0f
+    var panY = 0f
+
+    if (screenX <= edgePan) {
+      panX = -(edgePan - screenX)
+    }
+
+    if (screenX >= Core.graphics.width - edgePan) {
+      panX = (screenX - Core.graphics.width) + edgePan
+    }
+
+    if (screenY <= edgePan) {
+      panY = -(edgePan - screenY)
+    }
+
+    if (screenY >= Core.graphics.height - edgePan) {
+      panY = (screenY - Core.graphics.height) + edgePan
+    }
+
+    vector.set(panX, panY).scl(Core.camera.width / Core.graphics.width)
+    vector.limit(maxPanSpeed)
+
+    // pan view
+    Core.camera.position.x += vector.x
+    Core.camera.position.y += vector.y
   }
 }

@@ -107,6 +107,8 @@ object PonderCore : ApplicationListener, TimelineContext {
   val view
     get() = ponder.image
 
+  val renderScl = 0.9f
+
   fun hovered(): Displayable? = input.hovered()
 
   var scene: PonderScene? = null

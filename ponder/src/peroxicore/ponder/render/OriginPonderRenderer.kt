@@ -46,7 +46,7 @@ class OriginPonderRenderer : PonderRenderer {
     get() = buffer.texture
   val size: Float
     get() =
-      min(Core.graphics.width, Core.graphics.height).toFloat()
+      min(Core.graphics.width, Core.graphics.height).toFloat() * PonderCore.renderScl
 
   val resolution
     get() =

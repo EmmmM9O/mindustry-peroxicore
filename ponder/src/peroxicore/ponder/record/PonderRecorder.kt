@@ -1,8 +1,9 @@
 package peroxicore.ponder.record
 
 import arc.*
+import arc.graphics.*
 import arc.math.geom.Point2
-import arc.util.Time
+import arc.util.*
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
@@ -12,6 +13,7 @@ import mindustry.*
 import mindustry.content.Blocks
 import mindustry.ctype.UnlockableContent
 import mindustry.game.EventType.*
+import mindustry.graphics.*
 import mindustry.world.*
 import peroxicore.*
 import peroxicore.ponder.PonderCore
@@ -60,6 +62,10 @@ object PonderRecorder {
   private var initialized = false
   private var width = 0
   private var height = 0
+  var startX = 0
+  var endX = 0
+  var startY = 0
+  var endY = 0
   private var initial = HashMap<Int, State>()
   private var time = 0f
   val actions = mutableListOf<RecordedAction>()
@@ -81,13 +87,14 @@ object PonderRecorder {
         actions +=
           RecordedAction.Place(
             time,
-            tile.x.toInt(),
-            tile.y.toInt(),
+            tile.x.toInt() - startX,
+            tile.y.toInt() - startY,
             tile.block().name,
             tile.build?.rotation ?: 0,
           )
         event.config?.let {
-          actions += RecordedAction.Configure(time, tile.x.toInt(), tile.y.toInt(), it)
+          actions +=
+            RecordedAction.Configure(time, tile.x.toInt() - startX, tile.y.toInt() - startY, it)
         }
       }
     }
@@ -97,8 +104,8 @@ object PonderRecorder {
         actions +=
           RecordedAction.Place(
             time,
-            tile.x.toInt(),
-            tile.y.toInt(),
+            tile.x.toInt() - startX,
+            tile.y.toInt() - startY,
             event.build.block.name,
             event.build.rotation,
           )
@@ -107,30 +114,60 @@ object PonderRecorder {
     Events.on(ConfigEvent::class.java) { event ->
       if (active && (event.player == null || event.player == Vars.player)) {
         val tile = event.tile.tile
-        actions += RecordedAction.Configure(time, tile.x.toInt(), tile.y.toInt(), event.value)
+        actions +=
+          RecordedAction.Configure(
+            time,
+            tile.x.toInt() - startX,
+            tile.y.toInt() - startY,
+            event.value,
+          )
       }
     }
     Events.on(TileFloorChangeEvent::class.java) { event ->
       if (active)
         actions +=
-          RecordedAction.Floor(time, event.tile.x.toInt(), event.tile.y.toInt(), event.floor.name)
+          RecordedAction.Floor(
+            time,
+            event.tile.x.toInt() - startX,
+            event.tile.y.toInt() - startY,
+            event.floor.name,
+          )
     }
+    PeroxiCore.input.topRenderers.add {
+      drawTop()
+    }
+  }
+
+  val col1 = Color.valueOf("#BBFF99")
+  val col2 = Color.valueOf("#99FFDD")
+  val selectText = "Ponder"
+
+  fun drawTop() {
+    if (!active) return
+    PeroxiCore.input.drawSelection(startX, startY, endX, endY, col1, col2, selectText)
   }
 
   fun start() {
     init()
-    val tiles = Vars.world.tiles ?: return
-    width = tiles.width
-    height = tiles.height
-    initial = HashMap()
-    for (x in 0 until width) for (y in 0 until height) {
-      val tile = tiles.get(x, y) ?: continue
-      initial[x + y * width] =
-        State(tile.block().name, tile.floor().name, tile.build?.rotation ?: 0)
+    PeroxiCore.input.selectionTask(col1, col2, selectText) { x1, y1, x2, y2 ->
+      val tiles = Vars.world.tiles ?: return@selectionTask
+      width = x2 - x1 + 1
+      height = y2 - y1 + 1
+      startX = x1
+      startY = y1
+      endX = x2
+      endY = y2
+      initial = HashMap()
+      for (x in x1..x2) for (y in y1..y2) {
+        val tile = tiles.get(x, y) ?: continue
+        initial[x - x1 + (y - y1) * width] =
+          State(tile.block().name, tile.floor().name, tile.build?.rotation ?: 0)
+      }
+      actions.clear()
+      time = 0f
+      active = true
+      Log.info("Start Record from ($x1, $y1) to ($x2, $y2)")
     }
-    actions.clear()
-    time = 0f
-    active = true
   }
 
   fun stop() {

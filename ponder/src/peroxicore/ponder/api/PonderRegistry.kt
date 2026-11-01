@@ -14,6 +14,51 @@ object PonderRegistry {
   val contentScenes = ObjectMap<UnlockableContent, PonderScene>()
 
   fun load() {
+    Blocks.itemSource.register {
+      keyframes {
+        speed(1f)
+        duration(400f)
+
+        world(11, 11) {
+          fillFloor(Blocks.stone)
+        }
+
+        frame(10f) {
+          at(2, 5).build(Blocks.itemSource)
+          at(2, 7).build(Blocks.itemSource)
+          at(8, 8).build(Blocks.itemSource)
+          at(5, 5).build(Blocks.itemSource)
+          at(6, 5).build(Blocks.titaniumConveyor)
+          at(7, 5).build(Blocks.titaniumConveyor)
+          at(8, 5).build(Blocks.titaniumConveyor)
+          at(9, 5).build(Blocks.itemVoid)
+        }
+
+        frame(50f) {
+          at(5, 5).showConfig()
+        }
+
+        frame(90f) {
+          at(5, 5).focus(5)
+        }
+
+        frame(100f) {
+          full()
+        }
+
+        frame(130f) {
+          at(2, 5).showConfig()
+        }
+
+        frame(160f) {
+          at(2, 7).showConfig()
+        }
+
+        frame(190f) {
+          at(8, 8).showConfig()
+        }
+      }
+    }
     Blocks.electrolyzer.register {
       keyframes {
         speed(1f)

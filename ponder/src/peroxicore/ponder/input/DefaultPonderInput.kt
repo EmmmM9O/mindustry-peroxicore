@@ -8,7 +8,13 @@ import arc.math.geom.*
 import arc.struct.*
 import arc.util.*
 import arc.util.pooling.*
+import arc.scene.*
+import arc.scene.event.*
+import arc.scene.style.*
+import arc.scene.ui.*
+import arc.scene.ui.layout.*
 import mindustry.*
+import mindustry.gen.*
 import mindustry.Vars.*
 import mindustry.content.*
 import mindustry.core.*
@@ -16,6 +22,7 @@ import mindustry.entities.units.*
 import mindustry.input.*
 import mindustry.input.InputHandler.*
 import mindustry.ui.*
+import mindustry.ui.fragments.*
 import mindustry.world.*
 import peroxicore.ponder.*
 import universe.util.reflect.*
@@ -26,6 +33,8 @@ var InputHandler.allPlans: Eachable<BuildPlan> by accessField("allPlans")
 var InputHandler.allSelectLines: Eachable<BuildPlan> by accessField("allSelectLines")
 var InputHandler.allRenderPlansConfig: Eachable<BuildPlan> by accessField("allRenderPlansConfig")
 
+var BlockConfigFragment.table_: Table by accessField("table")
+
 class DefaultPonderInput : PonderInput {
   val tmpVec = Vec2()
   override val camRect = Rect()
@@ -35,8 +44,11 @@ class DefaultPonderInput : PonderInput {
   override var isBuilding = false
   lateinit var input: InputHandler
   lateinit var inputHandler: DefaultPonderInputHandler
+  lateinit var arcInput: DefaultPonderArcInput
   val taskPool = Pools.get(InputTask::class.java, ::InputTask)!!
   val tasks = Seq<InputTask>()
+  lateinit var config: BlockConfigFragment
+  lateinit var configTable: Table
 
   fun task(
     x: Float,
@@ -71,8 +83,8 @@ class DefaultPonderInput : PonderInput {
       }
       if (
         (hoverTile.drop() != null && hoverTile.block() == Blocks.air) ||
-        hoverTile.wallDrop() != null ||
-        hoverTile.floor().liquidDrop != null
+          hoverTile.wallDrop() != null ||
+          hoverTile.floor().liquidDrop != null
       ) {
         return hoverTile
       }
@@ -83,9 +95,25 @@ class DefaultPonderInput : PonderInput {
   override fun setup() {}
 
   override fun init() {
+    config = BlockConfigFragment()
+    configTable = config.table_
     input = control.input
     inputHandler = DefaultPonderInputHandler(this)
     inputHandler.add()
+    arcInput = DefaultPonderArcInput(Core.input)
+    configTable.visible = false
+  }
+
+  override fun onWorldRebuild() {
+    PonderCore.ponder.world.addChild(configTable)
+  }
+
+  override fun showConfig(tile: Building) {
+    config.showConfig(tile)
+  }
+
+  override fun hideConfig() {
+    config.hideConfig()
   }
 
   override fun render() {}
@@ -110,12 +138,14 @@ class DefaultPonderInput : PonderInput {
 
   override fun begin() {
     active = true
+    arcInput.begin()
     inputHandler.begin()
   }
 
   override fun end() {
     active = false
     inputHandler.end()
+    arcInput.end()
   }
 
   override fun beginWorld() {}
@@ -123,6 +153,7 @@ class DefaultPonderInput : PonderInput {
   override fun beforeWorld() {
     camControl = false
     camRect.set(-4f, -4f, camera.width, camera.height)
+    config.forceHide()
   }
 
   override fun endWorld() {
@@ -143,6 +174,90 @@ class DefaultPonderInput : PonderInput {
   ) = input.validPlace(x, y, type, rotation)
 }
 
+open class DefaultPonderArcInput(private val delegate: Input) : Input() {
+  val view get() = PonderCore.ponder.world
+  fun begin() {
+    Core.input = this
+  }
+
+  fun end() {
+    Core.input = delegate
+  }
+
+  override fun mouseScreen(x: Float, y: Float): Vec2 =
+    Core.camera.project(mouseReturn.set(x, y), 0f, 0f, view.width, view.height)
+
+  override fun mouseX(): Int = delegate.mouseX()
+
+  override fun mouseX(pointer: Int): Int = delegate.mouseX(pointer)
+
+  override fun mouseY(): Int = delegate.mouseY()
+
+  override fun mouseY(pointer: Int): Int = delegate.mouseY(pointer)
+
+  override fun deltaX(): Int = delegate.deltaX()
+
+  override fun deltaX(pointer: Int): Int = delegate.deltaX(pointer)
+
+  override fun deltaY(): Int = delegate.deltaY()
+
+  override fun deltaY(pointer: Int): Int = delegate.deltaY(pointer)
+
+  override fun isTouched(): Boolean = delegate.isTouched()
+
+  override fun isTouched(pointer: Int): Boolean = delegate.isTouched(pointer)
+
+  override fun justTouched(): Boolean = delegate.justTouched()
+
+  override fun getCurrentEventTime(): Long = delegate.getCurrentEventTime()
+
+  override fun keyDown(key: KeyCode): Boolean = delegate.keyDown(key)
+
+  override fun keyTap(key: KeyCode): Boolean = delegate.keyTap(key)
+
+  override fun keyRelease(key: KeyCode): Boolean = delegate.keyRelease(key)
+
+  override fun axis(key: KeyCode): Float = delegate.axis(key)
+
+  override fun getKeyboard() = delegate.keyboard
+
+  override fun getInputMultiplexer() = delegate.inputMultiplexer
+
+  override fun getInputProcessors() = delegate.inputProcessors
+
+  override fun setCatch(code: KeyCode, c: Boolean) = delegate.setCatch(code, c)
+
+  override fun isCatch(code: KeyCode): Boolean = delegate.isCatch(code)
+
+  override fun vibrate(milliseconds: Int) = delegate.vibrate(milliseconds)
+
+  override fun vibrate(pattern: LongArray, repeat: Int) = delegate.vibrate(pattern, repeat)
+
+  override fun cancelVibrate() = delegate.cancelVibrate()
+
+  override fun getPressure(): Float = delegate.getPressure()
+
+  override fun getPressure(pointer: Int): Float = delegate.getPressure(pointer)
+
+  override fun isPeripheralAvailable(peripheral: Input.Peripheral): Boolean =
+    delegate.isPeripheralAvailable(peripheral)
+
+  override fun getRotation(): Int = delegate.getRotation()
+
+  override fun getNativeOrientation(): Input.Orientation = delegate.getNativeOrientation()
+
+  override fun getTextInput(input: Input.TextInput) = delegate.getTextInput(input)
+
+  override fun isShowingTextInput(): Boolean = delegate.isShowingTextInput()
+
+  override fun setOnscreenKeyboardVisible(visible: Boolean) =
+    delegate.setOnscreenKeyboardVisible(visible)
+
+  override fun setUseKeyboard(useKeyboard: Boolean) = delegate.setUseKeyboard(useKeyboard)
+
+  override fun useKeyboard(): Boolean = delegate.useKeyboard()
+}
+
 open class InputTask : Pool.Poolable {
   typealias Function = DefaultPonderInputHandler.(Float, Float) -> Unit
 
@@ -160,22 +275,23 @@ open class InputTask : Pool.Poolable {
   }
 }
 
-class DefaultPonderInputHandler(
-  val input: DefaultPonderInput,
-) : InputProcessor,
-  GestureListener {
+class DefaultPonderInputHandler(val input: DefaultPonderInput) : InputProcessor, GestureListener {
   lateinit var detector: GestureDetector
   val mouseWorld = Vec2()
   val mouseVec = Vec2()
   var hit = false
   val camera
     get() = PonderCore.camera
+
   val view
     get() = PonderCore.view
+
   val tiles
     get() = PonderCore.tiles
+
   val active
     get() = PonderCore.ponder.display
+
   val origin = input.input
   val linePlans = Seq<BuildPlan>()
   val selectPlans = Seq<BuildPlan>()
@@ -245,7 +361,7 @@ class DefaultPonderInputHandler(
           0f,
           0f,
           tiles.unitWidth().toFloat(),
-          tiles.unitHeight().toFloat()
+          tiles.unitHeight().toFloat(),
         )
       )
     selectPlanTree =
@@ -254,7 +370,7 @@ class DefaultPonderInputHandler(
           0f,
           0f,
           tiles.unitWidth().toFloat(),
-          tiles.unitHeight().toFloat()
+          tiles.unitHeight().toFloat(),
         )
       )
     createPlanLists()
@@ -283,7 +399,7 @@ class DefaultPonderInputHandler(
             y * tilesize - tilesize / 2f * size,
             size * tilesize.toFloat(),
             size * tilesize.toFloat(),
-            check
+            check,
           )
         }
       }
@@ -324,7 +440,7 @@ class DefaultPonderInputHandler(
       0f,
       0f,
       view.width,
-      view.height
+      view.height,
     )
 
   fun tileAt(vec: Vec2): Tile? {

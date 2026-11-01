@@ -15,6 +15,7 @@ open class FloatingTable() : Table() {
   val dragButton: ImageButton
   var dragging = false
   var key = "floating-table"
+  var setC = 0
 
   init {
     dragButton = ImageButton(Icon.move, Styles.cleari)
@@ -55,13 +56,20 @@ open class FloatingTable() : Table() {
         Mathf.clamp(pos.x, getPrefWidth() / 2f, parent.getWidth() - getPrefWidth() / 2f),
         Mathf.clamp(pos.y, getPrefHeight() / 2f, parent.getHeight() - getPrefHeight() / 2f),
       )
+
+      setC++
+      if(setC >= 60) {
+        Core.settings.put("$key-x", x.toInt())
+        Core.settings.put("$key-y", y.toInt())
+        setC = 0
+      }
     }
   }
 
   fun loadPosition(key: String = this.key) {
     setPosition(
       Core.settings.getInt("$key-x", Core.graphics.width / 2).toFloat(),
-      Core.settings.getInt("$key-x", Core.graphics.height / 2).toFloat()
+      Core.settings.getInt("$key-y", Core.graphics.height / 2).toFloat()
     )
   }
 

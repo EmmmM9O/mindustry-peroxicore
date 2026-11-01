@@ -13,16 +13,14 @@ import arc.scene.ui.*
 import arc.scene.ui.ImageButton.*
 import arc.scene.ui.layout.*
 import arc.util.pooling.*
+import kotlin.math.*
 import mindustry.*
 import mindustry.gen.*
 import mindustry.graphics.*
 import mindustry.ui.*
 import mindustry.ui.dialogs.*
 import peroxicore.ponder.*
-import peroxicore.ponder.record.PonderRecorder
 import peroxicore.ponder.scene.*
-
-import kotlin.math.*
 
 class TimelineBar : Element() {
   var barName = ""
@@ -37,15 +35,11 @@ class TimelineBar : Element() {
       field = value
       snap()
     }
-  val bw =
-    Core.atlas
-      .find("bar-top")
-      .width
-      .toFloat()
-  var fraction =
-    Floatp {
-      timeline?.run { PonderCore.currentTick / duration } ?: 0f
-    }
+
+  val bw = Core.atlas.find("bar-top").width.toFloat()
+  var fraction = Floatp {
+    timeline?.run { PonderCore.currentTick / duration } ?: 0f
+  }
 
   fun updateName(timeline: Timeline?) =
     timeline?.let {
@@ -118,17 +112,22 @@ class TimelineBar : Element() {
 
   val timelineBack = (Tex.whiteui as TextureRegionDrawable)
   var scl = Scl.scl()
-  val tickWidth 
+  val tickWidth
     get() = 6f * scl
-  val tickOver 
+
+  val tickOver
     get() = 3f * scl
-  val iconWidth 
+
+  val iconWidth
     get() = 20f * scl
-  val fullWidth 
+
+  val fullWidth
     get() = 60f * scl
-  val hitWidth 
+
+  val hitWidth
     get() = 80f * scl
-  val barHeight 
+
+  val barHeight
     get() = 40f * scl
 
   override fun draw() {
@@ -157,7 +156,7 @@ class TimelineBar : Element() {
         x - outlineRadius,
         y - outlineRadius,
         width + outlineRadius * 2,
-        barHeight + outlineRadius * 2
+        barHeight + outlineRadius * 2,
       )
     }
 
@@ -191,7 +190,7 @@ class TimelineBar : Element() {
             x + dx - fullWidth / 2f,
             y + barHeight + tickOver,
             fullWidth,
-            fullWidth
+            fullWidth,
           )
         }
       }
@@ -206,7 +205,7 @@ class TimelineBar : Element() {
           x + dx - fullWidth / 2f,
           y + barHeight + tickOver,
           fullWidth,
-          fullWidth
+          fullWidth,
         )
       }
     }
@@ -224,7 +223,7 @@ class TimelineBar : Element() {
     font.cache.addText(
       barName,
       x + width / 2f - lay.width / 2f,
-      y + height / 2f + lay.height / 2f + 9
+      y + height / 2f + lay.height / 2f + 9,
     )
     font.cache.draw(parentAlpha)
 
@@ -244,10 +243,74 @@ open class PonderDialog :
       background = Tex.windowEmpty
       titleFont = Fonts.def
       titleFontColor = Pal.accent
-    }
+    },
   ) {
   var marginSize = 80f
   val view = Table()
+  val world =
+    object : WidgetGroup() {
+      val tmp = Vec2()
+
+      override fun act(delta: Float) {
+        PonderCore.begin()
+        if (touchablility != null) this.touchable = touchablility.get()
+        val actors = children.begin()
+        var i = 0
+        val n = children.size
+        while (i < n) {
+          actors[i].updateVisibility()
+          if (actors[i].visible) {
+            actors[i].act(delta)
+          }
+          i++
+        }
+        children.end()
+        PonderCore.end()
+      }
+
+      override fun hit(x: Float, y: Float, touchable: Boolean): Element? {
+        if (touchable && this.touchable == Touchable.disabled) return null
+        PonderCore.begin()
+        val point = tmp
+        var res: Element? = null
+        val childrenArray = children.items
+        for (i in children.size - 1 downTo 0) {
+          val child = childrenArray[i]
+          // TODO: this optimization may be incorrect, needs further testing.
+          if (
+            !child.visible ||
+              (child.cullable &&
+                cullingArea != null &&
+                !cullingArea.overlaps(
+                  child.x + child.translation.x,
+                  child.y + child.translation.y,
+                  child.width,
+                  child.height,
+                ))
+          )
+            continue
+          child.parentToLocalCoordinates(point.set(x, y))
+          val hit = child.hit(point.x, point.y, touchable)
+          if (hit != null) {
+            res = hit
+            PonderCore.end()
+            return res
+          }
+        }
+        val e = this
+        res =
+          if (
+            x >= e.translation.x &&
+              x < width + e.translation.x &&
+              y >= e.translation.y &&
+              y < height + e.translation.y
+          )
+            this
+          else null
+        PonderCore.end()
+        return res
+      }
+    }
   val timelineBar = TimelineBar()
   val style1: ImageButtonStyle =
     object : ImageButtonStyle() {
@@ -258,35 +321,38 @@ open class PonderDialog :
         disabled = Styles.black6
       }
     }
-  val rightBar =
-    Table { bar ->
-      bar.right().bottom()
+  val rightBar = Table { bar ->
+    bar.right().bottom()
 
-      bar
-        .button(Icon.left, style1) {
-          PonderCore.previous()
-        }.size(marginSize)
-        .get()
-        .resizeImage(marginSize)
-      bar
-        .button(Icon.right, style1) {
-          PonderCore.next()
-        }.size(marginSize)
-        .get()
-        .resizeImage(marginSize)
-      bar
-        .button(Icon.refresh, style1) {
-          PonderCore.restart()
-        }.size(marginSize)
-        .get()
-        .resizeImage(marginSize)
-      bar
-        .button(Icon.info, style1) {
-          PonderCore.scene?.info()
-        }.size(marginSize)
-        .get()
-        .resizeImage(marginSize)
-    }
+    bar
+      .button(Icon.left, style1) {
+        PonderCore.previous()
+      }
+      .size(marginSize)
+      .get()
+      .resizeImage(marginSize)
+    bar
+      .button(Icon.right, style1) {
+        PonderCore.next()
+      }
+      .size(marginSize)
+      .get()
+      .resizeImage(marginSize)
+    bar
+      .button(Icon.refresh, style1) {
+        PonderCore.restart()
+      }
+      .size(marginSize)
+      .get()
+      .resizeImage(marginSize)
+    bar
+      .button(Icon.info, style1) {
+        PonderCore.scene?.info()
+      }
+      .size(marginSize)
+      .get()
+      .resizeImage(marginSize)
+  }
   val drawable = TextureRegionDrawable(TextureRegion())
   val image = Image(drawable)
   var display = false
@@ -314,6 +380,7 @@ open class PonderDialog :
   var lastDisplay: Displayable? = null
 
   fun setup() {
+    PonderCore.input.onWorldRebuild()
     val current = PonderCore.scene
     if (current == null) {
       hide()
@@ -328,40 +395,44 @@ open class PonderDialog :
     margin(0f)
 
     stack(
-      view,
-      Table { main ->
-        main.top().left()
-        main.table { info ->
-          info.image(current.icon).size(marginSize)
-          info
-            .table { text ->
-              text
-                .table { top ->
-                  top.add("思索......", 2f).left().style(Styles.outlineLabel)
-                  top.add().growX()
-                }.uniformX()
-                .growX()
-                .row()
-              text
-                .table { bottom ->
-                  bottom.add(current.name, 1.5f).style(Styles.outlineLabel)
-                }.uniformX()
-                .growX()
-            }.height(marginSize)
-        }
-      },
-      Table { infoBar ->
-        infoBar.bottom().right().marginBottom(marginSize)
-        infoBar.add(Table(Styles.black6)).update { info ->
-          val hovered = PonderCore.hovered()
-          if (lastDisplay == hovered) return@update
-          lastDisplay = hovered
-          info.clearChildren()
-          hovered?.display(info)
-        }
-      },
-      buttons
-    ).grow()
+        view,
+        Table { main ->
+          main.top().left()
+          main.table { info ->
+            info.image(current.icon).size(marginSize)
+            info
+              .table { text ->
+                text
+                  .table { top ->
+                    top.add("思索......", 2f).left().style(Styles.outlineLabel)
+                    top.add().growX()
+                  }
+                  .uniformX()
+                  .growX()
+                  .row()
+                text
+                  .table { bottom ->
+                    bottom.add(current.name, 1.5f).style(Styles.outlineLabel)
+                  }
+                  .uniformX()
+                  .growX()
+              }
+              .height(marginSize)
+          }
+        },
+        Table { infoBar ->
+          infoBar.bottom().right().marginBottom(marginSize)
+          infoBar.add(Table(Styles.black6)).update { info ->
+            val hovered = PonderCore.hovered()
+            if (lastDisplay == hovered) return@update
+            lastDisplay = hovered
+            info.clearChildren()
+            hovered?.display(info)
+          }
+        },
+        buttons,
+      )
+      .grow()
     current.buildDialog(this)
   }
 
@@ -376,15 +447,20 @@ open class PonderDialog :
     view.center()
     val gw = Core.graphics.width
     val gh = Core.graphics.height
-    val size = if (gw > gh) gh * 0.9f else gw * 0.9f
+    val size = if (gw > gh) gh * PonderCore.renderScl else gw * PonderCore.renderScl
     val (w, h) =
       scaleToMax(
         PonderCore.tiles.width.toFloat(),
         PonderCore.tiles.height.toFloat(),
-        size
+        size,
       )
     val scl = Scl.scl()
-    view.add(image).size(w / scl, h / scl)
+    world.clearChildren()
+    world.addChild(image)
+    //    world.touchable = Touchable.disabled
+    image.setSize(w, h)
+    world.setSize(w, h)
+    view.add(world).size(w / scl, h / scl).center()
   }
 
   fun rebuildBar() {

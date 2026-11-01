@@ -392,4 +392,17 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
   fun fill(schematic: Schematic) {
     at(schematic.width / 2, schematic.height / 2).set(schematic)
   }
+
+  @ToAction
+  fun Point.showConfig() {
+    input.showConfig(tiles.get(x, y).build)
+  }
+
+  fun Building.showConfig() {
+    input.showConfig(this)
+  }
+
+  fun hideConfig() {
+    input.hideConfig()
+  }
 }

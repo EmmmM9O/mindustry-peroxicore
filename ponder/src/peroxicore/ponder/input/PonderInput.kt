@@ -3,6 +3,7 @@ package peroxicore.ponder.input
 import arc.math.geom.*
 import mindustry.ui.*
 import mindustry.world.*
+import mindustry.gen.*
 import peroxicore.ponder.*
 
 interface PonderInput {
@@ -44,4 +45,10 @@ interface PonderInput {
     type: Block,
     rotation: Int,
   ): Boolean
+
+  fun onWorldRebuild()
+
+  fun showConfig(tile: Building)
+
+  fun hideConfig()
 }
