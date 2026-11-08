@@ -102,9 +102,11 @@ subprojects {
     }
     google()
   }
+  val d8 = configurations.create("d8")
+
   dependencies {
     compileOnly(kotlin("stdlib-jdk8"))
-    compileOnly("com.android.tools:r8:9.1.31")
+    d8("com.android.tools:r8:9.1.31")
 
     testImplementation(kotlin("stdlib-jdk8"))
     testImplementation(kotlin("test"))
@@ -161,21 +163,15 @@ subprojects {
         description = "Compile Dex"
         group = "deployment"
 
-        inputs.files(configurations.compileClasspath)
+        inputs.files(d8)
         inputs.file(originJar)
         outputs.file(dexJar)
 
         mainClass.set("com.android.tools.r8.D8")
         workingDir = layout.buildDirectory.dir("libs").get().asFile
-        classpath = files()
+        classpath(d8)
 
         doFirst {
-          val r8Jar =
-            configurations.compileClasspath.get().files.find {
-              it.name.startsWith("r8-") && it.extension == "jar"
-            } ?: throw GradleException("No R8.jar")
-          classpath = files(r8Jar)
-
           val argsList = mutableListOf<String>()
           configurations.compileClasspath.get().files.forEach { f ->
             if (f.isFile && f.extension == "jar" && !f.name.startsWith("r8-")) {

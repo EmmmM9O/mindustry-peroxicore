@@ -17,8 +17,8 @@ data class CialloSandbox(
   val allowFunc: ((String) -> Boolean)? = null
 ) {
   fun permitsClass(className: String): Boolean =
-    allowedPackages.isEmpty() ||
-      allowedPackages.any { className == it || className.startsWith(it + ".") } ||
+    (allowedPackages.isEmpty() ||
+      allowedPackages.any { className == it || className.startsWith(it + ".") }) &&
       (allowFunc?.invoke(className) ?: true)
 
   companion object {
