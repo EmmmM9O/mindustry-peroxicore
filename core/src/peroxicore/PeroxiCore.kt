@@ -78,10 +78,13 @@ class PeroxiCore : Mod() {
     if (Vars.headless) return
     if (Vars.mobile) {
       input = PeroxiCoreMobileInput()
+      input.add()
+    } else {
+      // TODO Desktop
     }
+
     Events.run(EventType.Trigger.drawOver, this::drawOver)
     Events.run(EventType.Trigger.update, this::update)
-    input.add()
   }
 
   fun update() {

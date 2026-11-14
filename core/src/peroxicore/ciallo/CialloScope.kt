@@ -1,6 +1,8 @@
 package peroxicore.ciallo
 
-/** A map-like backing store for a scope, used by object-backed blocks. */
+import peroxicore.ciallo.value.*
+
+/** A map-like backing store for a scope; used by object-backed and host-backed blocks. */
 interface CialloScopeBacking {
   fun get(name: String): CialloValue?
 
@@ -10,7 +12,7 @@ interface CialloScopeBacking {
 }
 
 /** Exposes the fields of a Ciallo object as the variables of a scope. */
-class CialloObjScopeBacking(private val obj: CialloValue.Obj) : CialloScopeBacking {
+class CialloObjScopeBacking(private val obj: CialloObj) : CialloScopeBacking {
   override fun get(name: String): CialloValue? = obj.fields[name]
 
   override fun contains(name: String): Boolean = obj.fields.containsKey(name)
@@ -26,19 +28,20 @@ class CialloObjScopeBacking(private val obj: CialloValue.Obj) : CialloScopeBacki
 class CialloJavaScopeBacking(
   private val target: Any,
   private val sandbox: CialloSandbox,
+  private val bridge: CialloJavaBridge,
 ) : CialloScopeBacking {
   override fun get(name: String): CialloValue? =
-    if (CialloJavaAccess.hasField(target, name)) {
-      CialloJavaAccess.getField(target, name, sandbox)
+    if (bridge.hasField(target, name)) {
+      bridge.getMember(target, name, sandbox)
     } else {
       null
     }
 
-  override fun contains(name: String): Boolean = CialloJavaAccess.hasField(target, name)
+  override fun contains(name: String): Boolean = bridge.hasField(target, name)
 
   override fun set(name: String, value: CialloValue): Boolean {
-    if (!CialloJavaAccess.hasField(target, name)) return false
-    CialloJavaAccess.setField(target, name, value, sandbox)
+    if (!bridge.hasField(target, name)) return false
+    bridge.setMember(target, name, value, sandbox)
     return true
   }
 }
@@ -48,8 +51,8 @@ class CialloJavaScopeBacking(
  *
  * The root scope is the global scope.  [local] definitions live in the scope
  * where they are executed; [mount] definitions always go to the root.  A scope
- * may also be backed by an object, in which case its fields behave like local
- * variables for that block.
+ * may also be backed by an object or a host object, in which case its members
+ * behave like local variables for that block.
  */
 class CialloScope private constructor(
   val parent: CialloScope?,
@@ -59,7 +62,7 @@ class CialloScope private constructor(
   private val values = LinkedHashMap<String, CialloValue>()
 
   companion object {
-    private val reserved = setOf("local", "mount", "set")
+    val reserved: Set<String> = setOf("local", "mount", "set")
 
     fun global(): CialloScope = CialloScope(null, true, null)
 
@@ -83,11 +86,17 @@ class CialloScope private constructor(
   fun containsLocal(name: String): Boolean =
     values.containsKey(name) || backing?.contains(name) == true
 
+  /**
+   * Resolves [name] from this scope outwards.  The scope's own variables win;
+   * otherwise its backing (an object's fields) is consulted before the parent,
+   * so a custom scope shadows the block's closure.
+   */
   fun lookup(name: String): CialloValue? {
     var scope: CialloScope? = this
     while (scope != null) {
       scope.values[name]?.let { return it }
-      scope.backing?.get(name)?.let { return it }
+      val backing = scope.backing
+      if (backing != null && backing.contains(name)) return backing.get(name)
       scope = scope.parent
     }
     return null

@@ -1,5 +1,8 @@
 package peroxicore.ciallo
 
+import peroxicore.ciallo.ops.*
+import peroxicore.ciallo.value.*
+
 /**
  * Controls what a Ciallo script may reach.
  *
@@ -27,43 +30,64 @@ data class CialloSandbox(
   }
 }
 
-/*
-/** Mutable world state produced by a world { ... } block. */
-class CialloWorld {
-  var width: Int = 0
-  var height: Int = 0
-  var fill: CialloValue? = null
-}
+/** How a [CialloJavaValue] reaches the host JVM.  Installed with [CialloEnvironment.javaBridge]. */
+interface CialloJavaBridge {
+  fun hasField(target: Any, name: String): Boolean
 
-/** Host-visible results of executing a Ciallo script. */
-class CialloScene {
-  var target: CialloValue? = null
-  var world: CialloWorld? = null
-  val builds: MutableList<CialloValue.BuildAction> = mutableListOf()
-  val labels: MutableList<CialloValue.LabelAction> = mutableListOf()
-  val frames: MutableList<CialloValue.FrameAction> = mutableListOf()
+  fun getMember(target: Any, name: String, sandbox: CialloSandbox): CialloValue
+
+  fun setMember(target: Any, name: String, value: CialloValue, sandbox: CialloSandbox)
+
+  fun callMember(target: Any, name: String, args: List<CialloValue>, sandbox: CialloSandbox): CialloValue
+
+  fun toJava(value: CialloValue): Any?
+
+  fun fromJava(value: Any?): CialloValue
+
+  /** Resolves `@com.example.Type.field`. */
+  fun resolveStatic(sandbox: CialloSandbox, path: List<String>): CialloValue?
+
+  fun applyBlock(
+    context: CialloCallContext,
+    target: Any,
+    block: CialloBlockValue,
+  ): CialloValue? = null
 }
-*/
 
 /**
  * Host configuration for the interpreter.
  *
  * [symbols] are named host values (for example "Blocks.duo"), [natives] are
  * host functions.  The standard Ciallo builtins are installed automatically.
+ *
+ * Extensibility hooks:
+ * - [operations] holds the operator, free-function and name-resolution components;
+ * - [values] maps a class to the value that wraps it (for host value families);
+ * - [javaBridge] exposes host JVM objects.
  */
 class CialloEnvironment(
   val output: (String) -> Unit = { println(it) },
   val sandbox: CialloSandbox = CialloSandbox.SAFE,
+  /** Optional host components notified about the values a script produces. */
+  val outputComp: CialloOutputComp? = null,
 ) {
   /** Global variables mounted by scripts run in this environment. */
   val globalScope: CialloScope = CialloScope.global()
 
   val symbols: MutableMap<String, CialloValue> = linkedMapOf()
   val natives: MutableMap<String, CialloNative> = linkedMapOf()
-//  val scene: CialloScene = CialloScene()
+
+  /** The operator, free-function and resolution components of this environment. */
+  val operations: CialloOperations = CialloOperations.standard()
+
+  /** Host value families, consulted by [wrapHost]; the most specific registered type wins. */
+  val values: MutableMap<Class<*>, (Any) -> CialloValue?> = linkedMapOf()
+
+  /** Reads JVM members of [CialloJavaValue]s and resolves static names. */
+  var javaBridge: CialloJavaBridge = CialloJavaAccess(this)
 
   init {
-    CialloBuiltins.install(this)
+    operations.addAll(CialloBuiltins.components)
   }
 
   fun symbol(path: String, value: CialloValue) {
@@ -87,7 +111,38 @@ class CialloEnvironment(
 
   fun global(name: String): CialloValue? = globalScope.lookup(name)
 
+  /** Registers a component: operator, free function, member handler, suffix parser or resolver. */
+  fun operation(component: CialloOperation) {
+    operations.add(component)
+  }
+
+  /**
+   * Wraps host objects of [type] in a custom value family.
+   *
+   * [wrapper] receives the host object; return `null` to fall back to
+   * [CialloJavaValue].
+   */
+  fun <T : Any> value(type: Class<T>, wrapper: (T) -> CialloValue?) {
+    values[type] = { target -> @Suppress("UNCHECKED_CAST") wrapper(target as T) }
+  }
+
+  /** Wraps a host value through the registered value families, else as [CialloJavaValue]. */
+  fun fromJava(value: Any?): CialloValue = wrapHost(value) ?: CialloNil.INSTANCE
+
+  /** The value family registered for the class of [value], if any. */
+  fun wrapHost(value: Any?): CialloValue? {
+    if (value == null) return null
+    if (value is CialloValue) return value
+    values.entries
+      .lastOrNull { (type, _) -> type.isInstance(value) }
+      ?.value
+      ?.invoke(value)
+      ?.let { return it }
+    return null
+  }
+
   fun printLine(text: String) {
     output(text)
+    outputComp?.printed(text)
   }
 }

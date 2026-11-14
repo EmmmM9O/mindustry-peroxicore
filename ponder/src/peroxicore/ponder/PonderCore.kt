@@ -109,6 +109,8 @@ object PonderCore : ApplicationListener, TimelineContext {
 
   val renderScl = 0.9f
 
+  var ponderEnv = false
+
   fun hovered(): Displayable? = input.hovered()
 
   var scene: PonderScene? = null
@@ -124,6 +126,7 @@ object PonderCore : ApplicationListener, TimelineContext {
     width: Int,
     height: Int,
   ) {
+    PonderUI.resize(width, height)
   }
 
   override fun pause() {}
@@ -235,6 +238,7 @@ object PonderCore : ApplicationListener, TimelineContext {
     ponder = PonderDialog()
     PonderRegistry.load()
     PonderUI.load()
+    PonderUI.root = ponder.world
     Events.fire(PonderTrigger.load)
     Time.run(1f) {
 //      PonderRegistry.show(Blocks.electrolyzer)
@@ -327,6 +331,7 @@ object PonderCore : ApplicationListener, TimelineContext {
       y = 16f
     }
 
+    PonderUI.update()
     input.update()
     input.render()
     renderer.render()
@@ -349,6 +354,8 @@ object PonderCore : ApplicationListener, TimelineContext {
   }
 
   fun begin() {
+    if(ponderEnv) return
+    ponderEnv = true
     if (Vars.state != state) originState = Vars.state
     if (Vars.world.tiles != tiles) originTiles = Vars.world.tiles
     if (Vars.player?.unit() != ponderer) originUnit = Vars.player?.unit()
@@ -362,10 +369,13 @@ object PonderCore : ApplicationListener, TimelineContext {
     input.begin()
     renderer.begin()
     PonderGroups.begin()
+    ponder.begin()
+    PonderUI.begin()
     Events.fire(PonderTrigger.begin)
   }
 
   fun end() {
+    ponderEnv = false
     Vars.state = originState
     Vars.world.tiles = originTiles
     Vars.indexer = originIndexer
@@ -374,6 +384,16 @@ object PonderCore : ApplicationListener, TimelineContext {
     input.end()
     renderer.end()
     PonderGroups.end()
+    ponder.end()
+    PonderUI.end()
     Events.fire(PonderTrigger.end)
+  }
+
+  fun enableInput() {
+    ponder.worldTouchable = true
+  }
+
+  fun disableInput() {
+    ponder.worldTouchable = false
   }
 }

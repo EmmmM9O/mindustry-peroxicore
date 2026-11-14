@@ -9,6 +9,7 @@ import arc.input.*
 import arc.input.GestureDetector.*
 import arc.math.geom.*
 import arc.struct.*
+import arc.scene.*
 import arc.util.*
 import arc.util.pooling.*
 import mindustry.*

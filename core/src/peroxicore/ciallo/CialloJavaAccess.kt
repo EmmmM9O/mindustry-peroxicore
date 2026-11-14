@@ -1,5 +1,6 @@
 package peroxicore.ciallo
 
+import peroxicore.ciallo.value.*
 import universe.UniverseActual.reflection
 import java.lang.reflect.*
 
@@ -7,12 +8,15 @@ import java.lang.reflect.*
  * JVM bridge for the full-access sandbox.
  *
  * The language itself never routes normal builtins through reflection; only
- * host Java objects reached through a [CialloValue.JavaValue] do.  UniverseKit's
+ * host Java objects reached through a [CialloJavaValue] do.  UniverseKit's
  * reflection handle is used so that module boundaries and final fields behave on
  * both desktop and Android.
+ *
+ * The bridge is installed on [CialloEnvironment.javaBridge] and can be replaced:
+ * a host that wants a different JVM policy registers its own.
  */
-internal object CialloJavaAccess {
-  fun resolveStatic(sandbox: CialloSandbox, path: List<String>): CialloValue? {
+class CialloJavaAccess(private val environment: CialloEnvironment) : CialloJavaBridge {
+  override fun resolveStatic(sandbox: CialloSandbox, path: List<String>): CialloValue? {
     if (!sandbox.allowJvmAccess) return null
     if (path.size < 2) return null
 
@@ -46,7 +50,66 @@ internal object CialloJavaAccess {
     return null
   }
 
-  fun hasField(target: Any, name: String): Boolean = findField(target, name) != null
+  override fun hasField(target: Any, name: String): Boolean = findField(target, name) != null
+
+  override fun getMember(target: Any, name: String, sandbox: CialloSandbox): CialloValue =
+    getField(target, name, sandbox)
+
+  override fun setMember(target: Any, name: String, value: CialloValue, sandbox: CialloSandbox) {
+    setField(target, name, value, sandbox)
+  }
+
+  override fun callMember(
+    target: Any,
+    name: String,
+    args: List<CialloValue>,
+    sandbox: CialloSandbox,
+  ): CialloValue = callMethod(target, name, args, sandbox)
+
+  override fun toJava(value: CialloValue): Any? {
+    if (value === CialloNil.INSTANCE) return null
+    return when (value) {
+      is CialloBool -> value.value
+      is CialloInt -> value.value
+      is CialloFloat -> value.value
+      is CialloTime -> value.millis
+      is CialloStr -> value.value
+      is CialloArr -> value.items.map { toJava(it) }
+      is CialloObj -> value.fields.mapValues { toJava(it.value) }
+      is CialloSymbol -> value.name
+      is CialloJavaValue -> value.value
+      else -> value
+    }
+  }
+
+  override fun fromJava(value: Any?): CialloValue =
+    when (value) {
+      null -> CialloNil.INSTANCE
+      is CialloValue -> value
+      is Boolean -> CialloBool(value)
+      is Byte -> CialloInt(value.toInt())
+      is Short -> CialloInt(value.toInt())
+      is Int -> CialloInt(value)
+      is Long ->
+        if (value in Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong()) CialloInt(value.toInt())
+        else CialloFloat(value.toFloat())
+      is Float -> CialloFloat(value)
+      is Double -> CialloFloat(value.toFloat())
+      is Char -> CialloStr(value.toString())
+      is String -> CialloStr(value)
+      is CharSequence -> CialloStr(value.toString())
+      is Array<*> -> CialloArr(value.map { fromJava(it) }.toMutableList())
+      is Iterable<*> -> CialloArr(value.map { fromJava(it) }.toMutableList())
+      else -> environment.wrapHost(value) ?: CialloJavaValue(value)
+    }
+
+  /** Enters a host object as `: this{ ... }`; its fields shadow the block's closure. */
+  override fun applyBlock(context: CialloCallContext, target: Any, block: CialloBlockValue): CialloValue? {
+    requireJvmAccess(environment.sandbox, target, "apply block on " + target.javaClass.name)
+    val scope = block.block.closure.child(CialloJavaScopeBacking(target, environment.sandbox, this))
+    context.interpreter.executeBlockInScope(block.block, scope)
+    return CialloJavaValue(target)
+  }
 
   fun getField(target: Any, name: String, sandbox: CialloSandbox): CialloValue {
     requireJvmAccess(sandbox, target, "field '" + name + "' on " + target.javaClass.name)
@@ -154,42 +217,5 @@ internal object CialloJavaAccess {
       Short::class.javaPrimitiveType -> Short::class.javaObjectType
       Char::class.javaPrimitiveType -> Char::class.javaObjectType
       else -> type
-    }
-
-  fun toJava(value: CialloValue): Any? =
-    when (value) {
-      CialloValue.Nil -> null
-      is CialloValue.Bool -> value.value
-      is CialloValue.IntValue -> value.value
-      is CialloValue.FloatValue -> value.value
-      is CialloValue.TimeValue -> value.millis
-      is CialloValue.Str -> value.value
-      is CialloValue.Arr -> value.items.map { toJava(it) }
-      is CialloValue.Obj -> value.fields.mapValues { toJava(it.value) }
-      is CialloValue.Symbol -> value.name
-      is CialloValue.JavaValue -> value.value
-      is CialloValue.BlockValue -> value
-      is CialloValue.NativeValue -> value
-    }
-
-  fun fromJava(value: Any?): CialloValue =
-    when (value) {
-      null -> CialloValue.Nil
-      is CialloValue -> value
-      is Boolean -> CialloValue.Bool(value)
-      is Byte -> CialloValue.IntValue(value.toInt())
-      is Short -> CialloValue.IntValue(value.toInt())
-      is Int -> CialloValue.IntValue(value)
-      is Long ->
-        if (value in Int.MIN_VALUE.toLong()..Int.MAX_VALUE.toLong()) CialloValue.IntValue(value.toInt())
-        else CialloValue.FloatValue(value.toFloat())
-      is Float -> CialloValue.FloatValue(value)
-      is Double -> CialloValue.FloatValue(value.toFloat())
-      is Char -> CialloValue.Str(value.toString())
-      is String -> CialloValue.Str(value)
-      is CharSequence -> CialloValue.Str(value.toString())
-      is Array<*> -> CialloValue.Arr(value.map { fromJava(it) }.toMutableList())
-      is Iterable<*> -> CialloValue.Arr(value.map { fromJava(it) }.toMutableList())
-      else -> CialloValue.JavaValue(value)
     }
 }

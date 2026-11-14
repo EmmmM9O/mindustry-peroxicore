@@ -1,5 +1,6 @@
 package peroxicore.ciallo
 
+import peroxicore.ciallo.value.*
 import kotlin.test.*
 
 class CialloReflectionTarget {
@@ -27,8 +28,8 @@ class CialloLangTest {
   private fun runWithSymbols(source: String): Pair<List<String>, CialloScene> {
     val lines = mutableListOf<String>()
     val environment = CialloEnvironment(output = { lines += it })
-    environment.symbol("Blocks.duo", CialloValue.Str("duo"))
-    environment.symbol("Blocks.green", CialloValue.Str("green"))
+    environment.symbol("Blocks.duo", CialloStr("duo"))
+    environment.symbol("Blocks.green", CialloStr("green"))
     CialloEngine(environment).execute(source)
     return lines to environment.scene
   }*/
@@ -186,7 +187,7 @@ class CialloLangTest {
   @Test
   fun sandboxBlocksJvmAccess() {
     val environment = CialloEnvironment(output = { }, sandbox = CialloSandbox.SAFE)
-    environment.symbol("host", CialloValue.JavaValue(Any()))
+    environment.symbol("host", CialloJavaValue(Any()))
     assertFailsWith<CialloSandboxException> {
       CialloEngine(environment).execute("@host toString()")
     }
@@ -196,7 +197,7 @@ class CialloLangTest {
   fun fullSandboxAllowsJvmFieldsAndMethods() {
     val lines = mutableListOf<String>()
     val environment = CialloEnvironment(output = { lines += it }, sandbox = CialloSandbox.FULL)
-    environment.symbol("host", CialloValue.JavaValue(CialloReflectionTarget()))
+    environment.symbol("host", CialloJavaValue(CialloReflectionTarget()))
     CialloEngine(environment).execute(
       "print(@host.value)\nprint(@host.double(3))\n@host.value set 9\nprint(@host.value)",
     )
@@ -234,17 +235,17 @@ class CialloLangTest {
       """
     val (lines, scene) = runWithSymbols(source)
     assertEquals(listOf("@blocks.duo.lable1"), lines)
-    assertEquals(CialloValue.Str("duo"), scene.target)
+    assertEquals(CialloStr("duo"), scene.target)
     assertEquals(11, scene.world?.width)
     assertEquals(11, scene.world?.height)
-    assertEquals(CialloValue.Str("green"), scene.world?.fill)
+    assertEquals(CialloStr("green"), scene.world?.fill)
     assertEquals(1, scene.builds.size)
     assertEquals(CialloValue.Point(5f, 5f), scene.builds[0].position)
     assertEquals(1, scene.labels.size)
     assertEquals(CialloValue.Point(6f, 5f), scene.labels[0].position)
-    assertEquals(CialloValue.TimeValue(5.0, CialloTimeUnit.Second), scene.labels[0].duration)
+    assertEquals(CialloTime(5.0, CialloTimeUnit.Second), scene.labels[0].duration)
     assertEquals(1, scene.frames.size)
-    assertEquals(CialloValue.TimeValue(1.0, CialloTimeUnit.Second), scene.frames[0].time)
+    assertEquals(CialloTime(1.0, CialloTimeUnit.Second), scene.frames[0].time)
   }*/
 
   @Test
@@ -252,7 +253,7 @@ class CialloLangTest {
     val lines = mutableListOf<String>()
     val environment = CialloEnvironment(output = { lines += it })
     environment.native("twice") { context, args ->
-      CialloValue.IntValue(context.int(args[0], "twice") * 2)
+      CialloInt(context.int(args[0], "twice") * 2)
     }
     CialloEngine(environment).execute("print(twice(21))")
     assertEquals(listOf("42"), lines)

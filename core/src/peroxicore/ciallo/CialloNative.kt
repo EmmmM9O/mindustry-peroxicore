@@ -1,5 +1,7 @@
 package peroxicore.ciallo
 
+import peroxicore.ciallo.value.*
+
 /** Strict parameter/value types used by native overload dispatch. */
 enum class CialloType(val displayName: String) {
   Any("Any"),
@@ -20,37 +22,37 @@ enum class CialloType(val displayName: String) {
   fun matches(value: CialloValue): Boolean =
     when (this) {
       Any -> true
-      Int -> value is CialloValue.IntValue
-      Float -> value is CialloValue.FloatValue
-      Time -> value is CialloValue.TimeValue
-      Str -> value is CialloValue.Str
-      Bool -> value is CialloValue.Bool
-      Nil -> value === CialloValue.Nil
-      Arr -> value is CialloValue.Arr
-      Symbol -> value is CialloValue.Symbol
-      Obj -> value is CialloValue.Obj
-      Block -> value is CialloValue.BlockValue
-      Native -> value is CialloValue.NativeValue
-      Java -> value is CialloValue.JavaValue
+      Int -> value is CialloInt
+      Float -> value is CialloFloat
+      Time -> value is CialloTime
+      Str -> value is CialloStr
+      Bool -> value is CialloBool
+      Nil -> value === CialloNil.INSTANCE
+      Arr -> value is CialloArr
+      Symbol -> value is CialloSymbol
+      Obj -> value is CialloObj
+      Block -> value is CialloBlockValue
+      Native -> value is CialloNativeValue
+      Java -> value is CialloJavaValue
       Other -> false
     }
 }
 
 val CialloValue.type: CialloType
   get() =
-    when (this) {
-      CialloValue.Nil -> CialloType.Nil
-      is CialloValue.Bool -> CialloType.Bool
-      is CialloValue.IntValue -> CialloType.Int
-      is CialloValue.FloatValue -> CialloType.Float
-      is CialloValue.TimeValue -> CialloType.Time
-      is CialloValue.Str -> CialloType.Str
-      is CialloValue.Arr -> CialloType.Arr
-      is CialloValue.Symbol -> CialloType.Symbol
-      is CialloValue.Obj -> CialloType.Obj
-      is CialloValue.BlockValue -> CialloType.Block
-      is CialloValue.NativeValue -> CialloType.Native
-      is CialloValue.JavaValue -> CialloType.Java
+    when (kind) {
+      CialloKind.Nil -> CialloType.Nil
+      CialloKind.Bool -> CialloType.Bool
+      CialloKind.Int -> CialloType.Int
+      CialloKind.Float -> CialloType.Float
+      CialloKind.Time -> CialloType.Time
+      CialloKind.Str -> CialloType.Str
+      CialloKind.Arr -> CialloType.Arr
+      CialloKind.Symbol -> CialloType.Symbol
+      CialloKind.Obj -> CialloType.Obj
+      CialloKind.Block -> CialloType.Block
+      CialloKind.Native -> CialloType.Native
+      CialloKind.Java -> CialloType.Java
     }
 
 private class CialloNativeOverload(

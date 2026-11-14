@@ -1,21 +1,132 @@
 package peroxicore.ponder.ui
 
 import arc.*
+import arc.input.*
+import arc.math.*
+import arc.math.geom.*
 import arc.scene.*
+import arc.scene.event.*
 import arc.scene.ui.layout.*
 import arc.struct.*
+import arc.util.*
 import mindustry.*
 import mindustry.game.EventType.*
 import mindustry.gen.*
 import mindustry.ui.*
 import mindustry.ui.fragments.*
 import mindustry.world.*
+import peroxicore.ponder.*
 import peroxicore.ponder.api.*
+import peroxicore.util.reflect.*
 import universe.util.reflect.*
+
+var Scene.root_: Group by accessField("root")
+var Scene.touchFocuses: Any by accessFieldAny("touchFocuses")
 
 object PonderUI {
   val labels = Seq<WorldLabel?>()
   val freeLabels = IntQueue()
+
+  val originScene = Core.scene
+  val originTouchFocuses = Core.scene.touchFocuses
+
+  val scene =
+    object : Scene() {
+      val touchFocusesA = this.touchFocuses
+      val tempCoords = Vec2()
+
+      override fun hit(stageX: Float, stageY: Float, touchable: Boolean): Element? {
+        this.root.stageToLocalCoordinates(tempCoords.set(stageX, stageY))
+        return this.root.hit(tempCoords.x, tempCoords.y, touchable)
+      }
+
+      override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: KeyCode): Boolean {
+        if (!PonderCore.ponder.display) return false
+        PonderCore.begin()
+        originScene.touchFocuses = touchFocusesA
+        val res = super.touchDown(screenX, screenY, pointer, button)
+        PonderCore.end()
+        originScene.touchFocuses = originTouchFocuses
+        return res
+      }
+
+      override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
+        if (!PonderCore.ponder.display) return false
+        PonderCore.begin()
+        val res = super.touchDragged(screenX, screenY, pointer)
+        PonderCore.end()
+        return res
+      }
+
+      override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: KeyCode): Boolean {
+        if (!PonderCore.ponder.display) return false
+        PonderCore.begin()
+        val res = super.touchUp(screenX, screenY, pointer, button)
+        PonderCore.end()
+        return res
+      }
+
+      override fun mouseMoved(screenX: Int, screenY: Int): Boolean {
+        if (!PonderCore.ponder.display) return false
+        PonderCore.begin()
+        val res = super.mouseMoved(screenX, screenY)
+        PonderCore.end()
+        return res
+      }
+
+      override fun scrolled(amountX: Float, amountY: Float): Boolean {
+        if (!PonderCore.ponder.display) return false
+        PonderCore.begin()
+        val res = super.scrolled(amountX, amountY)
+        PonderCore.end()
+        return res
+      }
+
+      override fun keyDown(keyCode: KeyCode): Boolean {
+        if (!PonderCore.ponder.display) return false
+        PonderCore.begin()
+        val res = super.keyDown(keyCode)
+        PonderCore.end()
+        return res
+      }
+
+      override fun keyUp(keyCode: KeyCode): Boolean {
+        if (!PonderCore.ponder.display) return false
+        PonderCore.begin()
+        val res = super.keyUp(keyCode)
+        PonderCore.end()
+        return res
+      }
+
+      override fun keyTyped(character: Char): Boolean {
+        if (!PonderCore.ponder.display) return false
+        PonderCore.begin()
+        val res = super.keyTyped(character)
+        PonderCore.end()
+        return res
+      }
+    }
+  val emptyRoot = scene.root
+  var root: Group? = null
+    set(value) {
+      /*
+      scene.root.clearChildren()
+      value?.let {
+        scene.root.addChild(it)
+      }*/
+      scene.root_ = value ?: emptyRoot
+      field = value
+    }
+
+  fun update() {
+    scene.root_ = emptyRoot
+    scene.act()
+    scene.root_ = root ?: emptyRoot
+  }
+
+  fun resize(width: Int, height: Int) {
+    scene.resize(width, height)
+  }
 
   //  lateinit var ponderingIcon: TextureRegion
   init {
@@ -89,7 +200,8 @@ object PonderUI {
   var lastTogger: Table? = null
 
   fun load() {
-//    ponderingIcon = IFiles.getModAtlas("pondering")
+    Core.input.inputMultiplexer.addProcessor(0, scene)
+    //    ponderingIcon = IFiles.getModAtlas("pondering")
     val frag = Vars.ui.hudfrag.blockfrag
     val tab = frag.toggler.parent
     val ori = tab.update_
@@ -103,10 +215,7 @@ object PonderUI {
 
   fun rebuild() {
     val frag = Vars.ui.hudfrag.blockfrag
-    val tab =
-      frag.topTable.cells
-        .first()
-        .get() as Table
+    val tab = frag.topTable.cells.first().get() as Table
     val ori = tab.update_
     tab.update {
       val last = tab.cells.firstOpt()?.get()
@@ -120,18 +229,21 @@ object PonderUI {
         header
           .button("W", Styles.flatBordert) {
             PonderRegistry.show(content)
-          }.size(8 * 5f)
+          }
+          .size(8 * 5f)
           .padTop(-5f)
           .padRight(5f)
           .right()
-        header
-          .add(it)
-          .size(8 * 5f)
-          .padTop(-5f)
-          .padLeft(5f)
-          .padRight(-5f)
-          .right()
+        header.add(it).size(8 * 5f).padTop(-5f).padLeft(5f).padRight(-5f).right()
       }
     }
+  }
+
+  fun begin() {
+    Core.scene = scene
+  }
+
+  fun end() {
+    Core.scene = originScene
   }
 }

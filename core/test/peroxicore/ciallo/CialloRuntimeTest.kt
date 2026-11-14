@@ -1,5 +1,6 @@
 package peroxicore.ciallo
 
+import peroxicore.ciallo.value.*
 import kotlin.test.*
 
 class CialloRuntimeTest {
@@ -33,10 +34,10 @@ class CialloRuntimeTest {
   fun environmentGlobalsCanBeSeededByHost() {
     val lines = mutableListOf<String>()
     val environment = CialloEnvironment(output = { lines += it })
-    environment.global("x", CialloValue.IntValue(11))
+    environment.global("x", CialloInt(11))
     CialloEngine(environment).execute("print @x")
     assertEquals(listOf("11"), lines)
-    assertEquals(CialloValue.IntValue(11), environment.global("x"))
+    assertEquals(CialloInt(11), environment.global("x"))
   }
 
   @Test
@@ -47,8 +48,8 @@ class CialloRuntimeTest {
     val safe = runtime.create("safe", CialloSandbox.SAFE) { safeOutput += it }
     val full = runtime.create("full", CialloSandbox.FULL) { fullOutput += it }
 
-    safe.symbol("host", CialloValue.JavaValue(CialloReflectionTarget()))
-    full.symbol("host", CialloValue.JavaValue(CialloReflectionTarget()))
+    safe.symbol("host", CialloJavaValue(CialloReflectionTarget()))
+    full.symbol("host", CialloJavaValue(CialloReflectionTarget()))
 
     assertFailsWith<CialloSandboxException> {
       CialloEngine(safe).execute("print(@host.value)")

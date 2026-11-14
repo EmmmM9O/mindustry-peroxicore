@@ -1,5 +1,6 @@
 package peroxicore.ciallo
 
+import peroxicore.ciallo.value.*
 import kotlin.test.*
 
 class CialloStrictTypeTest {
@@ -40,9 +41,9 @@ class CialloStrictTypeTest {
   fun strictHostOverloadsAreEnforced() {
     val environment = CialloEnvironment(output = { })
     environment.native("onlyInt", listOf(CialloType.Int)) { context, args ->
-      CialloValue.IntValue(context.int(args[0], "onlyInt"))
+      CialloInt(context.int(args[0], "onlyInt"))
     }
-    assertEquals(CialloValue.IntValue(3), CialloEngine(environment).execute("onlyInt(3)"))
+    assertEquals(CialloInt(3), CialloEngine(environment).execute("onlyInt(3)"))
     assertFailsWith<CialloRuntimeException> {
       CialloEngine(environment).execute("onlyInt(3f)")
     }

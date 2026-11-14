@@ -1,8 +1,16 @@
 package peroxicore.ciallo
 
 import org.jline.reader.*
+import peroxicore.ciallo.ops.*
+import peroxicore.ciallo.value.*
 
-/** Tab completion for functions, globals and simple object fields. */
+/**
+ * Tab completion for functions, globals, symbols and member names.
+ *
+ * Member candidates come from the receiver's own member table
+ * ([CialloMemberTable.exposedNames]) and from the member handlers registered for
+ * it, so a value family added by the host completes without touching this class.
+ */
 internal class CialloCompleter(
   private val environment: CialloEnvironment,
   private val globalScope: CialloScope,
@@ -29,12 +37,12 @@ internal class CialloCompleter(
       val prefix = raw.substring(0, lastDot + 1)
       val member = raw.substring(lastDot + 1)
       val target = resolvePath(raw.substring(0, lastDot))
-      if (target is CialloValue.Obj) {
-        target.fields.keys.filter { it.startsWith(member) }.forEach {
-          result += form(at, prefix + it)
+      if (target != null) {
+        target.properties().forEach {
+          if (it.startsWith(member)) result += form(at, prefix + it)
         }
       }
-      commonMethods.filter { it.startsWith(member) }.forEach {
+      commonMembers.filter { it.startsWith(member) }.forEach {
         result += form(at, prefix + it)
       }
       if (at) {
@@ -51,6 +59,7 @@ internal class CialloCompleter(
       names += environment.symbols.keys.filter { !it.contains('.') }
     } else {
       names += environment.natives.keys
+      names += environment.operations.freeFunctionNames()
       names += globalScope.localValues().keys
       names += environment.symbols.keys.filter { !it.contains('.') }
     }
@@ -73,7 +82,7 @@ internal class CialloCompleter(
       ?: environment.symbols[parts[0]]
       ?: return null
     for (index in 1 until parts.size) {
-      val obj = value as? CialloValue.Obj ?: return null
+      val obj = value as? CialloObj ?: return null
       value = obj.fields[parts[index]] ?: return null
     }
     return value
@@ -81,7 +90,7 @@ internal class CialloCompleter(
 
   companion object {
     private val consoleCommands = listOf(":help", ":quit", ":reset", ":env")
-    private val commonMethods =
+    private val commonMembers =
       listOf(
         "add",
         "sub",
@@ -102,16 +111,16 @@ internal class CialloCompleter(
         "size",
         "length",
         "get",
+        "set",
         "join",
         "apply",
         "run",
         "then",
-        "at",
-        "config",
-        "duration",
+        "map",
+        "filter",
+        "each",
         "local",
         "mount",
-        "set",
       )
   }
 }

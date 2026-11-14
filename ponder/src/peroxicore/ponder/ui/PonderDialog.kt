@@ -6,10 +6,13 @@ import arc.graphics.*
 import arc.graphics.g2d.*
 import arc.math.*
 import arc.math.geom.*
+import arc.util.*
+import arc.input.*
 import arc.scene.*
 import arc.scene.event.*
 import arc.scene.style.*
 import arc.scene.ui.*
+import arc.scene.utils.*
 import arc.scene.ui.ImageButton.*
 import arc.scene.ui.layout.*
 import arc.util.pooling.*
@@ -267,50 +270,7 @@ open class PonderDialog :
         children.end()
         PonderCore.end()
       }
-
-      override fun hit(x: Float, y: Float, touchable: Boolean): Element? {
-        if (touchable && this.touchable == Touchable.disabled) return null
-        PonderCore.begin()
-        val point = tmp
-        var res: Element? = null
-        val childrenArray = children.items
-        for (i in children.size - 1 downTo 0) {
-          val child = childrenArray[i]
-          // TODO: this optimization may be incorrect, needs further testing.
-          if (
-            !child.visible ||
-              (child.cullable &&
-                cullingArea != null &&
-                !cullingArea.overlaps(
-                  child.x + child.translation.x,
-                  child.y + child.translation.y,
-                  child.width,
-                  child.height,
-                ))
-          )
-            continue
-          child.parentToLocalCoordinates(point.set(x, y))
-          val hit = child.hit(point.x, point.y, touchable)
-          if (hit != null) {
-            res = hit
-            PonderCore.end()
-            return res
-          }
-        }
-        val e = this
-        res =
-          if (
-            x >= e.translation.x &&
-              x < width + e.translation.x &&
-              y >= e.translation.y &&
-              y < height + e.translation.y
-          )
-            this
-          else null
-        PonderCore.end()
-        return res
-      }
-    }
+   }
   val timelineBar = TimelineBar()
   val style1: ImageButtonStyle =
     object : ImageButtonStyle() {
@@ -354,7 +314,9 @@ open class PonderDialog :
       .resizeImage(marginSize)
   }
   val drawable = TextureRegionDrawable(TextureRegion())
-  val image = Image(drawable)
+  val image = Image(drawable).apply {
+    touchable = Touchable.disabled
+  }
   var display = false
 
   fun load() {
@@ -457,9 +419,37 @@ open class PonderDialog :
     val scl = Scl.scl()
     world.clearChildren()
     world.addChild(image)
-    //    world.touchable = Touchable.disabled
+    world.touchable = Touchable.disabled
     image.setSize(w, h)
     world.setSize(w, h)
+    /*
+    val tb = Elem.newButton("test") {
+      Log.info("Current World ${PonderCore.ponderEnv} ${Vars.indexer}")
+    }
+    tb.addListener(object: InputListener() {
+      override fun touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: KeyCode): Boolean {
+        Log.info("listener touchDown $x $y ${isOver(event.listenerActor, x, y)}")
+        Thread.currentThread().stackTrace.forEach { Log.info(it) }
+        return true
+      }
+      override fun touchDragged(event: InputEvent, x: Float, y: Float, pointer: Int) {}
+      override fun touchUp(event: InputEvent, x: Float, y: Float, pointer: Int, button: KeyCode) {
+        Log.info("listener touchup $x $y ${isOver(event.listenerActor, x, y)}")
+        Thread.currentThread().stackTrace.forEach { Log.info(it) }
+      }
+      override fun enter(event: InputEvent, x: Float, y: Float, pointer: Int, fromActor: Element) {}
+      override fun exit(event: InputEvent, x: Float, y: Float, pointer: Int, toActor: Element) {}
+      fun isOver(element: Element, x: Float, y: Float): Boolean {
+        element.localToStageCoordinates(Tmp.v1.set(x, y))
+        Log.info("scene ${Core.scene} ${PonderUI.scene}")
+        val hit = Core.scene.hit(Tmp.v1.x, Tmp.v1.y, true)
+        Log.info("hit $hit")
+        return hit != null && hit.isDescendantOf(element)
+      }
+    })
+    tb.x = 100f
+    tb.y = 100f
+    world.addChild(tb)*/
     view.add(world).size(w / scl, h / scl).center()
   }
 
@@ -474,5 +464,15 @@ open class PonderDialog :
       .resizeImage(marginSize)
     buttons.add(timelineBar).height(marginSize).growX().marginLeft(30f).marginRight(30f)
     buttons.add(rightBar).right()
+  }
+
+  var worldTouchable = true
+
+  fun begin() {
+    world.touchable = if(worldTouchable) Touchable.childrenOnly else Touchable.disabled
+  }
+
+  fun end() {
+    world.touchable = Touchable.disabled
   }
 }

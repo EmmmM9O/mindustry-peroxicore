@@ -1,14 +1,15 @@
 package peroxicore.ciallo
 
+import peroxicore.ciallo.value.*
 import java.io.*
 
 /**
  * Host-side manager for multiple isolated Ciallo global environments.
  *
  * Each environment owns its [CialloEnvironment.globalScope], registered symbols,
- * natives, scene and [CialloSandbox].  Environments created here are independent:
- * mounting a variable in one does not affect another, and a safe environment and
- * a full-access environment can coexist.
+ * natives, components, value families and [CialloSandbox].  Environments created
+ * here are independent: mounting a variable in one does not affect another, and
+ * a safe environment and a full-access environment can coexist.
  */
 class CialloRuntime(
   private val defaultSandbox: CialloSandbox = CialloSandbox.SAFE,

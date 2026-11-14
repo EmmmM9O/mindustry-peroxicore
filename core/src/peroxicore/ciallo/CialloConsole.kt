@@ -2,6 +2,7 @@ package peroxicore.ciallo
 
 import org.jline.reader.*
 import org.jline.terminal.*
+import peroxicore.ciallo.value.*
 import java.io.IOException
 
 /** A small interactive Ciallo console with history, completion and highlighting. */
@@ -93,10 +94,8 @@ class CialloConsole(
   private fun execute(engine: CialloEngine, source: String) {
     try {
       val result = engine.execute(source, "<console>")
-      if (
-        result !is CialloValue.Nil
-      ) {
-        println(result.format())
+      if (result !== CialloNil.INSTANCE) {
+        println(result.render())
       }
     } catch (exception: CialloException) {
       System.err.println("ciallo: " + exception.message)
@@ -120,7 +119,7 @@ class CialloConsole(
     } else {
       println("globals:")
       for ((name, value) in globals) {
-        println("  " + name + " = " + value.format())
+        println("  " + name + " = " + value.render())
       }
     }
   }

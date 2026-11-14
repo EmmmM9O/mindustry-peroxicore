@@ -405,4 +405,28 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
   fun hideConfig() {
     input.hideConfig()
   }
+
+  fun enableInput() {
+    PonderCore.enableInput()
+  }
+
+  fun disableInput() {
+    PonderCore.disableInput()
+  }
+
+  fun pause() {
+    speed(0f)
+  }
+
+  fun play() {
+    speed(1f)
+  }
+
+  fun waitUtil(func: () -> Boolean) {
+    val origin = this.speed
+    speed(0f)
+    task(1f) {
+      if(func()) speed(origin)
+    }
+  }
 }

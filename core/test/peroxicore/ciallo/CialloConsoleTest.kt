@@ -1,5 +1,6 @@
 package peroxicore.ciallo
 
+import peroxicore.ciallo.value.*
 import kotlin.test.*
 
 class CialloConsoleTest {
@@ -14,8 +15,8 @@ class CialloConsoleTest {
   fun completerOffersFunctionsGlobalsAndFields() {
     val environment = CialloEnvironment(output = { })
     val engine = CialloEngine(environment)
-    environment.global("alpha", CialloValue.IntValue(1))
-    environment.symbol("obj", CialloValue.Obj(linkedMapOf("field" to CialloValue.IntValue(2))))
+    environment.global("alpha", CialloInt(1))
+    environment.symbol("obj", CialloObj(linkedMapOf("field" to CialloInt(2))))
     val completer = CialloCompleter(environment, engine.globalScope)
 
     assertTrue(completer.candidatesFor("pri").contains("print"))

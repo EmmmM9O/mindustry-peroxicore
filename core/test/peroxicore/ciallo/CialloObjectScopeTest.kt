@@ -1,5 +1,6 @@
 package peroxicore.ciallo
 
+import peroxicore.ciallo.value.*
 import kotlin.test.*
 
 class JavaApplyTarget {
@@ -14,7 +15,7 @@ class CialloObjectScopeTest {
   fun applyUsesObjectFields() {
     val lines = mutableListOf<String>()
     val environment = CialloEnvironment(output = { lines += it })
-    environment.symbol("obj", CialloValue.Obj(linkedMapOf("x" to CialloValue.IntValue(7))))
+    environment.symbol("obj", CialloObj(linkedMapOf("x" to CialloInt(7))))
     CialloEngine(environment).execute("obj.apply{ print @x }")
     assertEquals(listOf("7"), lines)
   }
@@ -23,12 +24,12 @@ class CialloObjectScopeTest {
   fun applyWritesBackToObject() {
     val lines = mutableListOf<String>()
     val environment = CialloEnvironment(output = { lines += it })
-    val obj = CialloValue.Obj(linkedMapOf("x" to CialloValue.IntValue(7)))
+    val obj = CialloObj(linkedMapOf("x" to CialloInt(7)))
     environment.symbol("obj", obj)
 
     val result = CialloEngine(environment).execute("obj.apply{ @x set 8 }")
     assertSame(obj, result)
-    assertEquals(CialloValue.IntValue(8), obj.fields["x"])
+    assertEquals(CialloInt(8), obj.fields["x"])
 
     CialloEngine(environment).execute("print(@obj.x)")
     assertEquals(listOf("8"), lines)
@@ -38,7 +39,7 @@ class CialloObjectScopeTest {
   fun applyFallsBackToClosure() {
     val lines = mutableListOf<String>()
     val environment = CialloEnvironment(output = { lines += it })
-    environment.symbol("obj", CialloValue.Obj(linkedMapOf("x" to CialloValue.IntValue(1))))
+    environment.symbol("obj", CialloObj(linkedMapOf("x" to CialloInt(1))))
     CialloEngine(environment).execute("@outer local 9\nobj.apply{ print @x\nprint @outer }")
     assertEquals(listOf("1", "9"), lines)
   }
@@ -48,7 +49,7 @@ class CialloObjectScopeTest {
     val lines = mutableListOf<String>()
     val environment = CialloEnvironment(output = { lines += it }, sandbox = CialloSandbox.FULL)
     val host = JavaApplyTarget()
-    environment.symbol("host", CialloValue.JavaValue(host))
+    environment.symbol("host", CialloJavaValue(host))
     CialloEngine(environment).execute("host.apply{ @value set 5\nprint @value }")
     assertEquals(listOf("5"), lines)
     assertEquals(5, host.value)
@@ -57,7 +58,7 @@ class CialloObjectScopeTest {
   @Test
   fun applyDuplicateLocalFails() {
     val environment = environment()
-    environment.symbol("obj", CialloValue.Obj(linkedMapOf("x" to CialloValue.IntValue(1))))
+    environment.symbol("obj", CialloObj(linkedMapOf("x" to CialloInt(1))))
     assertFailsWith<CialloRuntimeException> {
       CialloEngine(environment).execute("obj.apply{ @x local 2 }")
     }
@@ -67,11 +68,11 @@ class CialloObjectScopeTest {
   fun nestedApplyResolvesInnerThenOuter() {
     val lines = mutableListOf<String>()
     val environment = CialloEnvironment(output = { lines += it })
-    val inner = CialloValue.Obj(linkedMapOf("x" to CialloValue.IntValue(2)))
+    val inner = CialloObj(linkedMapOf("x" to CialloInt(2)))
     val outer =
-      CialloValue.Obj(
+      CialloObj(
         linkedMapOf(
-          "y" to CialloValue.IntValue(1),
+          "y" to CialloInt(1),
           "inner" to inner,
         ),
       )
