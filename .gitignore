@@ -14,3 +14,4 @@ tmp
 lwjgl/natives/*/libs/
 .vscode
 .kotlin
+.zcode

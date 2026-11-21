@@ -92,3 +92,4 @@ Do not use `deploy`.Just use `compileKotlin`.
 - Write smoke test without request by user
 - Do not remove any file without agreement.
 - Do not guess API signatures; follow the "Uncertain APIs" flow above.
+- **Never mutate source code to "verify" tests.** Do not deliberately break implementation files to confirm that tests catch it (mutation testing, fault injection, commenting out logic, flipping conditions, stubbing a branch). Validation means running the build and the test suite and reporting the actual result. If a test's effectiveness is genuinely in doubt, say so in prose or ask the user — never damage the working tree to find out.

@@ -105,6 +105,7 @@ object PonderRegistry {
       }
     }
     PonderRegistryJava.init()
+//    CialloPonder.loadScripts()
   }
 
   fun has(content: UnlockableContent) = contentScenes.containsKey(content)
