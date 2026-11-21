@@ -39,6 +39,14 @@ private val arrTable: CialloMemberTable = memberTable {
     items[context.index(args[0], items.size)]
   }
 
+  // A strict overload is what makes `@a.set(0, 9)` reach this method: the interpreter only treats
+  // `set` as the one-argument variable operation, so a two-argument call is dispatched normally.
+  method("set", listOf(CialloType.Int, CialloType.Any)) { context, value, args ->
+    val items = (value as CialloArr).items
+    items[context.index(args[0], items.size)] = args[1]
+    value
+  }
+
   method("set") { context, value, args ->
     requireArgs("set", args, 2)
     val items = (value as CialloArr).items

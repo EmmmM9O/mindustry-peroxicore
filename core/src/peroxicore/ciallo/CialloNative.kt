@@ -60,6 +60,44 @@ private class CialloNativeOverload(
   val function: CialloNativeFunction,
 )
 
+/** Whether this parameter list matches [values] by arity and exact [CialloType]. */
+fun List<CialloType>.matchesValues(values: List<CialloValue>): Boolean =
+  size == values.size && indices.all { this[it].matches(values[it]) }
+
+/**
+ * Picks the most specific overload that matches [values].
+ *
+ * A parameter list without [CialloType.Any] wins over one that uses it, so a strict overload is
+ * preferred over a catch-all; otherwise the first match wins.
+ */
+fun <T> selectOverload(
+  overloads: List<Pair<List<CialloType>, T>>,
+  values: List<CialloValue>,
+): T? {
+  val matches = overloads.filter { (parameters, _) -> parameters.matchesValues(values) }
+  return (matches.firstOrNull { (parameters, _) -> parameters.none { it == CialloType.Any } }
+    ?: matches.firstOrNull())?.second
+}
+
+/**
+ * The shared "no overload" diagnostic, such as
+ * `function 'at' has no overload for (Int, Float); expected (Int, Int) or (Float, Float)`.
+ */
+fun noOverloadMessage(
+  what: String,
+  expected: Collection<List<CialloType>>,
+  values: List<CialloValue>,
+): String {
+  val actual = values.joinToString(", ") { it.type.displayName }
+  val suffix =
+    if (expected.isEmpty()) {
+      ""
+    } else {
+      "; expected " + expected.joinToString(" or ") { it.joinToString(", ", "(", ")") { type -> type.displayName } }
+    }
+  return what + " has no overload for (" + actual + ")" + suffix
+}
+
 /**
  * A native function with one or more optional strict overloads.
  *
@@ -83,37 +121,20 @@ class CialloNative(val name: String) {
   }
 
   fun invoke(context: CialloCallContext, args: List<CialloValue>): CialloValue {
-    val typed = overloads.filter { it.parameters != null }
+    val typed = overloads.mapNotNull { overload ->
+      overload.parameters?.let { it to overload.function }
+    }
     val resolved = if (typed.isNotEmpty()) args.map { context.resolve(it) } else args
 
-    if (typed.isNotEmpty()) {
-      val matches =
-        typed.filter { overload ->
-          val parameters = overload.parameters!!
-          parameters.size == resolved.size &&
-            parameters.indices.all { index -> parameters[index].matches(resolved[index]) }
-        }
-      val matched =
-        matches.firstOrNull { overload -> overload.parameters!!.none { it == CialloType.Any } }
-          ?: matches.firstOrNull()
-      if (matched != null) {
-        return matched.function.invoke(context, resolved)
-      }
-    }
+    selectOverload(typed, resolved)?.let { return it.invoke(context, resolved) }
 
     val untyped = overloads.firstOrNull { it.parameters == null }
     if (untyped != null) {
       return untyped.function.invoke(context, args)
     }
 
-    val actual = resolved.joinToString(", ") { it.type.displayName }
-    val expected =
-      typed.joinToString(" or ") { overload ->
-        overload.parameters!!.joinToString(", ", "(", ")") { it.displayName }
-      }
-    val suffix = if (expected.isEmpty()) "" else "; expected " + expected
     throw CialloRuntimeException(
-      "function '" + name + "' has no overload for (" + actual + ")" + suffix,
+      noOverloadMessage("function '" + name + "'", typed.map { it.first }, resolved),
     )
   }
 }

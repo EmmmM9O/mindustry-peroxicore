@@ -104,6 +104,21 @@ class CialloEnvironment(
     natives.getOrPut(name) { CialloNative(name) }.add(parameters, function)
   }
 
+  /**
+   * Registers a typed overload of a *free function* (a [CialloFreeFunction] component) without
+   * replacing the existing function of the same name.
+   *
+   * Use this for overloads of the builtins (`print`, `run`, ...) or of any component; use
+   * [native] for host functions looked up as names.
+   */
+  fun freeFunction(
+    name: String,
+    parameters: List<CialloType>,
+    function: (CialloCallContext, List<CialloValue>) -> CialloValue?,
+  ) {
+    operations.freeFunction(name, parameters, function)
+  }
+
   /** Seeds a global variable for scripts run in this environment. */
   fun global(name: String, value: CialloValue) {
     globalScope.defineGlobal(name, value)

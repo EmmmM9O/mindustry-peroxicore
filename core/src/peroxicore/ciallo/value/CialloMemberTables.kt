@@ -10,6 +10,10 @@ import peroxicore.ciallo.*
  * A table may declare fallbacks: that is how a container hands a miss down to
  * the members of the value it wraps, and how a value family installs a default
  * (the JVM bridge of [CialloJavaValue]).
+ *
+ * A name may also carry strict typed overloads (`method("set", listOf(Int, Int)) { ... }`).
+ * Overloads are consulted first, most specific match winning; the untyped [callEntries]
+ * handler answers when no overload matches.
  */
 class CialloMemberTable(
   private val memberEntries: Map<String, CialloMemberFn> = emptyMap(),
@@ -17,19 +21,28 @@ class CialloMemberTable(
   private val memberFallback: CialloMemberStep? = null,
   private val callFallback: CialloCallStep? = null,
   private val aliases: Map<String, String> = emptyMap(),
+  private val overloadEntries: Map<String, List<CialloOverload>> = emptyMap(),
 ) : CialloMembers {
   val properties: Collection<String> get() = memberEntries.keys
 
   /** Every member this table advertises to completion and documentation. */
-  fun exposedNames(): Collection<String> = memberEntries.keys + callEntries.keys + aliases.keys
+  fun exposedNames(): Collection<String> =
+    memberEntries.keys + callEntries.keys + overloadEntries.keys + aliases.keys
 
   fun canRead(name: String): Boolean = name in memberEntries
 
   fun canCall(name: String): Boolean =
-    name in callEntries || name in memberEntries || callEntries.containsKey(aliases[name])
+    name in callEntries ||
+      name in memberEntries ||
+      name in overloadEntries ||
+      callEntries.containsKey(aliases[name])
 
   /** True when this table answers names it does not list, so callers must try it. */
   val open: Boolean get() = memberFallback != null || callFallback != null
+
+  /** The strict overload signatures registered for [name], for diagnostics. */
+  fun parameterLists(name: String): List<List<CialloType>> =
+    overloadEntries[name]?.map { it.parameters } ?: emptyList()
 
   override fun member(context: CialloCallContext, value: CialloValue, name: String): CialloValue? =
     memberEntries[name]?.invoke(context, value) ?: memberFallback?.invoke(context, value, name)
@@ -40,10 +53,33 @@ class CialloMemberTable(
     name: String,
     args: List<CialloValue>,
   ): CialloValue? {
-    (callEntries[name] ?: callEntries[aliases[name]])?.let { return it.invoke(context, value, args) }
-    memberEntries[name]?.let { return it.invoke(context, value) }
+    val canonical = aliases[name] ?: name
+    val overloads = overloadEntries[canonical]
+    if (!overloads.isNullOrEmpty()) {
+      val resolved = args.map { context.resolve(it) }
+      val typed = overloads.map { it.parameters to it.function }
+      selectOverload(typed, resolved)?.let { return it.invoke(context, value, resolved) }
+      // Typed overloads exist but none matched: fall through to the untyped handlers, so a table
+      // can mix strict overloads with a general implementation.
+    }
+    callEntries[canonical]?.let { return it.invoke(context, value, args) }
+    memberEntries[canonical]?.let { return it.invoke(context, value) }
     return callFallback?.invoke(context, value, name, args)
   }
+}
+
+/** One strict, typed overload of a member method. */
+class CialloOverload(
+  val parameters: List<CialloType>,
+  val function: CialloOverloadFn,
+)
+
+fun interface CialloOverloadFn {
+  fun invoke(
+    context: CialloCallContext,
+    value: CialloValue,
+    args: List<CialloValue>,
+  ): CialloValue?
 }
 
 fun interface CialloMemberFn {
@@ -92,6 +128,7 @@ open class CialloMemberTableBuilder {
   private val memberEntries = linkedMapOf<String, CialloMemberFn>()
   private val callEntries = linkedMapOf<String, CialloCallFn>()
   private val aliases = linkedMapOf<String, String>()
+  private val overloadEntries = linkedMapOf<String, MutableList<CialloOverload>>()
   private var memberFallback: CialloMemberStep? = null
   private var callFallback: CialloCallStep? = null
 
@@ -103,6 +140,17 @@ open class CialloMemberTableBuilder {
   /** `value.name(args)`. */
   fun method(name: String, block: CialloCallFn) {
     callEntries[name] = block
+  }
+
+  /**
+   * A strict overload of `value.name(args)`, chosen by exact [CialloType] matching.
+   *
+   * Registering overloads under a name does not remove the untyped [method] handler: strict
+   * overloads are tried first and the untyped handler answers when none matches. When only
+   * overloads exist and none matches, the call reports `no overload`.
+   */
+  fun method(name: String, parameters: List<CialloType>, block: CialloOverloadFn) {
+    overloadEntries.getOrPut(name) { mutableListOf() } += CialloOverload(parameters, block)
   }
 
   /** A second callable name for an existing call entry. */
@@ -119,7 +167,14 @@ open class CialloMemberTableBuilder {
   }
 
   open fun build(): CialloMemberTable =
-    CialloMemberTable(memberEntries, callEntries, memberFallback, callFallback, aliases)
+    CialloMemberTable(
+      memberEntries,
+      callEntries,
+      memberFallback,
+      callFallback,
+      aliases,
+      overloadEntries.mapValues { it.value.toList() },
+    )
 }
 
 /**

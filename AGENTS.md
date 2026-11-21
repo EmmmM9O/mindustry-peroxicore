@@ -30,6 +30,14 @@ In order to save token,do not read my source only to imitate my style.
 - `tmp/`: local scratch space and cached references (see below).
 - `build/`: generated outputs. **Do not edit by hand.**
 
+## Module Instructions
+
+Read a module's `AGENTS.md` only when the task touches that module.
+
+- `core/AGENTS.md` — the `core` module: Ciallo (the embedded script language) and its
+  `ciallopoet` code generator, `peroxicore.struct`, logging and other host wrappers.
+  Read `core/docs/ciallo/ciallo_basics.md` only when the task is actually about Ciallo.
+
 ## Uncertain APIs
 
 When you are not certain about an API's signature, behavior, or availability:
@@ -42,6 +50,31 @@ When you are not certain about an API's signature, behavior, or availability:
 **Never** inspect `.jar` files directly (no `unzip`, `jar tf`, `javap`, decompilation, or reading class files). If `tmp/` does not contain the answer, asking the user is the correct next step — do not guess and do not fall back to jar inspection.
 
 Remember If there is real ambiguity, ask instead of guessing.
+
+## UniverseKit Reflect
+
+`universe.util.reflect.*`（UniverseKit 1.4）用来读写 Arc/Mindustry 的私有、final 成员。完整 API 见 `tmp/Reflection.kt`（`UniverseKit-1.4/reflection` 的副本）。
+
+静态字段（`accessField` 返回 `FieldAccessorStatic`，可读可写）：
+
+```kotlin
+var events: ObjectMap<Any, Seq<Cons<*>>> by Events::class.accessField("events")
+```
+
+实例字段（返回 `FieldAccessor`，同样可读可写；注意是扩展属性，接收者是目标类型）：
+
+```kotlin
+var TargetType.field: T by accessField("field")
+```
+
+方法用 `accessMethod1..20`、构造用 `accessConstructor1..20`。
+
+要点：
+
+- **final 也能写。** 访问器在初始化时会对 final 字段调用 `makeMutable`，把修饰符里的 `FINAL` 去掉（desktop / desktop9 都是 `modifiers and FINAL.inv()`），所以把委托属性声明成 `var` 后可以直接赋值，`private static final` 也一样。`EventsHandler` 替换 `Events.events` 表就是这么做的。
+- `private` 不受限制，但字段类型必须和声明的 `T` 兼容，否则构造访问器时直接抛 `IllegalArgumentException`。
+- 静态和实例是两个不同的工厂：`KClass<*>.accessField(name)` 是静态版；`accessField<O, T>(name)` / `accessField(property)` 是需要接收者的实例版，只能写在带该接收者的类/对象里。用错会抛 `IllegalArgumentException`。
+- 字段查找只在初始化时做一次，之后走缓存的访问器；但每次读写的成本仍高于直接访问，别放进每帧热路径。
 
 ## Build Commands
 
@@ -56,5 +89,6 @@ Do not use `deploy`.Just use `compileKotlin`.
 
 ## Avoid
 
+- Write smoke test without request by user
 - Do not remove any file without agreement.
 - Do not guess API signatures; follow the "Uncertain APIs" flow above.

@@ -102,19 +102,19 @@ Blocks.electrolyzer.register {
     speed(1f)
     world(13, 11) {
       fillFloor(Blocks.rhyolite)
-      (4 at 3).around3().fill(Blocks.rhyoliteVent)
-      (8 at 5).focus(5)
+      at(4, 3).around3().fill(Blocks.rhyoliteVent)
+      at(8, 5).focus(5)
     }
     frame(50f) {
-      (8 at 5).build(Blocks.electrolyzer)
-      (9 at 5).label("Electrolyzer", 4f)
+      at(8, 5).build(Blocks.electrolyzer)
+      at(9, 5).label("Electrolyzer", 4f)
     }
     frame(200f) {
-      (4 at 3).focus(5)
-      (4 at 3).build(Blocks.ventCondenser).thenChain {
-          (4 at 7).build(Blocks.turbineCondenser)
+      at(4, 3).focus(5)
+      at(4, 3).build(Blocks.ventCondenser).thenChain {
+          at(4, 7).build(Blocks.turbineCondenser)
       }.thenChain {
-          (4 at 5).build(Blocks.beamNode)
+          at(4, 5).build(Blocks.beamNode)
       }
     }
   }

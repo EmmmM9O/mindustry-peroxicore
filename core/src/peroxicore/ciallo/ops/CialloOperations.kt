@@ -43,6 +43,39 @@ interface CialloFreeFunction : CialloOperation {
 }
 
 /**
+ * A named group of overloads for one free function, dispatched by exact [CialloType] matching.
+ *
+ * The first overload whose parameter list matches wins; an untyped overload given as `null`
+ * parameters answers when no strict overload matches. Registering an instance under a name that
+ * already exists does not replace the existing function: [CialloOperations] merges them into one
+ * overload group, so a host can add a typed overload without dropping the builtin.
+ */
+class CialloFreeFunctionOverloads(
+  override val name: String,
+  private val overloads: List<CialloFreeFunctionOverload>,
+) : CialloFreeFunction {
+  class CialloFreeFunctionOverload(
+    val parameters: List<CialloType>?,
+    val body: (CialloCallContext, List<CialloValue>) -> CialloValue?,
+  )
+
+  /** Every strict signature, used by diagnostics and completion. */
+  val parameterLists: List<List<CialloType>>
+    get() = overloads.mapNotNull { it.parameters }
+
+  override fun call(context: CialloCallContext, args: List<CialloValue>): CialloValue? {
+    val typed = overloads.mapNotNull { overload -> overload.parameters?.let { it to overload.body } }
+    val resolved = if (typed.isNotEmpty()) args.map { context.resolve(it) } else args
+    selectOverload(typed, resolved)?.let { return it.invoke(context, resolved) }
+    return overloads.firstOrNull { it.parameters == null }?.body?.invoke(context, args)
+  }
+
+  /** A new group with [overload] appended. */
+  fun plus(overload: CialloFreeFunctionOverload): CialloFreeFunctionOverloads =
+    CialloFreeFunctionOverloads(name, overloads + overload)
+}
+
+/**
  * A member request, `receiver.name` or `receiver.name(args)`, handled before the
  * receiver's own member table.  A handler that returns `null` declines.
  */
@@ -81,6 +114,43 @@ class CialloOperations {
     prefixOperators.lastOrNull { it.accepts(operator, operand) }
 
   fun freeFunction(name: String): CialloFreeFunction? = freeFunctions.lastOrNull { it.name == name }
+
+  /**
+   * Registers a typed overload of a free function.
+   *
+   * Overloads are kept as one group per name, so adding `at(Int, Int)` to a builtin `at` does not
+   * drop it; a later untyped registration still wins as the fallback, matching `freeFunction`.
+   */
+  fun freeFunction(
+    name: String,
+    parameters: List<CialloType>,
+    body: (CialloCallContext, List<CialloValue>) -> CialloValue?,
+  ) {
+    val overload = CialloFreeFunctionOverloads.CialloFreeFunctionOverload(parameters, body)
+    val existing = freeFunctions.lastOrNull { it.name == name }
+    freeFunctions.removeAll { it.name == name }
+    val merged =
+      when (existing) {
+        is CialloFreeFunctionOverloads -> existing.plus(overload)
+        null -> CialloFreeFunctionOverloads(name, listOf(overload))
+        else ->
+          CialloFreeFunctionOverloads(
+            name,
+            listOf(
+              CialloFreeFunctionOverloads.CialloFreeFunctionOverload(null) { context, args ->
+                existing.call(context, args)
+              },
+              overload,
+            ),
+          )
+      }
+    freeFunctions += merged
+  }
+
+  /** Every strict signature registered for [name], for diagnostics and completion. */
+  fun freeFunctionParameterLists(name: String): List<List<CialloType>> =
+    (freeFunctions.lastOrNull { it.name == name } as? CialloFreeFunctionOverloads)?.parameterLists
+      ?: emptyList()
 
   /** Every registered free function name; used by completion. */
   fun freeFunctionNames(): Collection<String> = freeFunctions.map { it.name }

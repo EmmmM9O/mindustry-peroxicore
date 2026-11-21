@@ -311,7 +311,10 @@ class CialloInterpreter(
     result: CialloValue? = null,
   ): CialloValue {
     result?.let { return it }
-    if (receiver is CialloSymbol && name in variableOps) {
+    // Variable operations take exactly one argument.  Any other arity means this is a real member
+    // call on the symbol, so `@a.set(0, 9)` reaches the array's `set` instead of failing as a
+    // variable assignment.
+    if (receiver is CialloSymbol && name in variableOps && args.size == 1) {
       return CialloSymbolMembers.call(context(), receiver, name, args)
         ?: throw CialloRuntimeException("'" + name + "' is not a variable operation")
     }
@@ -321,6 +324,14 @@ class CialloInterpreter(
 
     val target = memberTargetFor(receiver)
     target.members.call(context, target, name, args)?.let { return it }
+    // A table that declares strict overloads for the name but matched none gets the precise
+    // diagnostic instead of a generic "has no method".
+    val signatures = target.memberTableView()?.parameterLists(name).orEmpty()
+    if (signatures.isNotEmpty()) {
+      throw CialloRuntimeException(
+        noOverloadMessage("method '" + name + "'", signatures, args.map { context.resolve(it) }),
+      )
+    }
     throw CialloRuntimeException(receiver.kind.displayName.lowercase() + " has no method '" + name + "'")
   }
 
@@ -393,7 +404,14 @@ class CialloInterpreter(
       return native.native.invoke(context, args)
     }
     environment.natives[name]?.let { return it.invoke(context, args) }
-    operations.freeFunction(name)?.call(context, args)?.let { return it }
+    val free = operations.freeFunction(name) ?: return null
+    free.call(context, args)?.let { return it }
+    // The function exists but declined: when it declares strict overloads, report the mismatch
+    // instead of the misleading "unknown function".
+    val signatures = operations.freeFunctionParameterLists(name)
+    if (signatures.isNotEmpty()) {
+      throw CialloRuntimeException(noOverloadMessage("function '" + name + "'", signatures, args.map { context.resolve(it) }))
+    }
     return null
   }
 
