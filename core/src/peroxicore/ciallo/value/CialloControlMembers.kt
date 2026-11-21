@@ -66,9 +66,14 @@ private val timeTable: CialloMemberTable = memberTable {
 
   property("unit") { _, value -> CialloStr((value as CialloTime).unit.suffix) }
 
+  /** The duration in game ticks; `1s` is `60t`. */
+  property("ticks") { _, value -> CialloFloat((value as CialloTime).ticks) }
+
   method("toMillis") { _, value, _ -> CialloInt((value as CialloTime).millis.toInt()) }
 
   method("toSeconds") { _, value, _ -> CialloFloat(((value as CialloTime).millis / 1000.0).toFloat()) }
+
+  method("toTicks") { _, value, _ -> CialloFloat((value as CialloTime).ticks) }
 
   method("toString") { _, value, _ -> CialloStr(value.render()) }
 

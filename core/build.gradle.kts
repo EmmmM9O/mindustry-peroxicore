@@ -20,7 +20,9 @@ dependencies {
   ksp(project(":ksp"))
   kotlinCompilerPluginClasspath(project(":compiler-plugin"))
 
-  implementation("com.strumenta:antlr-kotlin-runtime:${Versions.antlr}")
+  // CialloInterpreter is part of the public API (CialloNameResolver takes one), so the
+  // ANTLR runtime types it extends must be on a consumer's compile classpath.
+  api("com.strumenta:antlr-kotlin-runtime:${Versions.antlr}")
   implementation("org.jline:jline:${Versions.jline}")
 }
 

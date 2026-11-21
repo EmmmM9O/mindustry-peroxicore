@@ -3,13 +3,19 @@ package peroxicore.ciallo.value
 import peroxicore.ciallo.*
 import peroxicore.parsers.*
 
+/**
+ * A time unit.  [ticks] is the conversion used by hosts that step in game ticks
+ * (Ponder, Mindustry): one second is 60 ticks.
+ */
 enum class CialloTimeUnit(
   val suffix: String,
-  val millis: Long,
+  val millis: Double,
+  val ticks: Double,
 ) {
-  Second("s", 1_000L),
-  Minute("m", 60_000L),
-  Hour("h", 3_600_000L),
+  Tick("t", 1_000.0 / 60.0, 1.0),
+  Second("s", 1_000.0, 60.0),
+  Minute("m", 60_000.0, 3_600.0),
+  Hour("h", 3_600_000.0, 216_000.0),
 }
 
 /** A block of Ciallo statements together with the scope in which it was defined. */
@@ -35,7 +41,8 @@ enum class CialloKind(val displayName: String) {
   Obj("Obj"),
   Block("Block"),
   Native("Native"),
-  Java("Java")
+  Java("Java"),
+  Host("Host")
 }
 
 /**

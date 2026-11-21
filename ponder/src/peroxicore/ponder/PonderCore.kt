@@ -14,7 +14,9 @@ import mindustry.gen.*
 import mindustry.net.*
 import mindustry.ui.*
 import mindustry.world.*
+import peroxicore.*
 import peroxicore.ponder.api.*
+import peroxicore.ponder.api.ciallo.*
 import peroxicore.ponder.input.*
 import peroxicore.ponder.render.*
 import peroxicore.ponder.record.PonderRecorder
@@ -237,12 +239,34 @@ object PonderCore : ApplicationListener, TimelineContext {
     renderer.init()
     ponder = PonderDialog()
     PonderRegistry.load()
+    loadCialloScripts()
     PonderUI.load()
     PonderUI.root = ponder.world
     Events.fire(PonderTrigger.load)
     Time.run(1f) {
 //      PonderRegistry.show(Blocks.electrolyzer)
     }
+  }
+
+  /**
+   * Runs every Ciallo script in the Ponder mod's `scripts` folder, if present.
+   *
+   * Scripts define scenes with `@Blocks.x scene { ... }`, so they register through
+   * [peroxicore.ponder.api.ciallo.CialloPonder] and show up next to the Kotlin ones.
+   * Loading failures are logged instead of aborting the whole Ponder startup.
+   */
+  fun loadCialloScripts() {
+    val mod = Vars.mods?.getMod(PeroxiCorePonder::class.java) ?: return
+    val directory = mod.root.child("scripts")
+    if (!directory.exists()) return
+    val count =
+      try {
+        CialloPonder.loadScripts(directory)
+      } catch (error: Throwable) {
+        Log.err("Ciallo Ponder scripts failed to load", error)
+        0
+      }
+    if (count > 0) Log.info("Ciallo Ponder: loaded @ script(s)", count)
   }
 
   fun beginDialog() {

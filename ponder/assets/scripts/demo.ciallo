@@ -1,0 +1,31 @@
+@Blocks.itemSource scene {
+  tag "blocks"
+  duration 10s
+  world(11, 11) {
+    fillFloor @Blocks.stone
+  }
+
+  frame(1s) {
+    at(2, 5) build @Blocks.itemSource
+    at(2, 7) build @Blocks.itemSource
+    at(8, 8) build @Blocks.itemSource
+    at(5, 5) build @Blocks.itemSource
+    at(6, 5) build @Blocks.titaniumConveyor
+    at(7, 5) build @Blocks.titaniumConveyor
+    at(8, 5) build @Blocks.titaniumConveyor
+    at(9, 5) build @Blocks.itemVoid
+    build @Blocks.duo config @Items.copper at(5, 8)
+  }
+
+  frame(2s) {
+    at(5, 5) showConfig()
+  }
+
+  frame(3s) {
+    at(5, 5) focus(5)
+  }
+
+  frame(4s) {
+    full()
+  }
+}

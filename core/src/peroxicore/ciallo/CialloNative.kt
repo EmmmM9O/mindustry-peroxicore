@@ -17,6 +17,7 @@ enum class CialloType(val displayName: String) {
   Block("Block"),
   Native("Native"),
   Java("Java"),
+  Host("Host"),
   Other("Value");
 
   fun matches(value: CialloValue): Boolean =
@@ -34,6 +35,7 @@ enum class CialloType(val displayName: String) {
       Block -> value is CialloBlockValue
       Native -> value is CialloNativeValue
       Java -> value is CialloJavaValue
+      Host -> value is CialloHostValue
       Other -> false
     }
 }
@@ -53,6 +55,7 @@ val CialloValue.type: CialloType
       CialloKind.Block -> CialloType.Block
       CialloKind.Native -> CialloType.Native
       CialloKind.Java -> CialloType.Java
+      CialloKind.Host -> CialloType.Host
     }
 
 private class CialloNativeOverload(

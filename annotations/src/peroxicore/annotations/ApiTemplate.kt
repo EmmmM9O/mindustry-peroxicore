@@ -24,6 +24,12 @@ annotation class ApiTemplate(
   val javaName: String = "",
   /** Fully qualified annotations copied onto the generated Kotlin interface. */
   val annotations: Array<String> = [],
+  /** Also generate a Ciallo member binding for this template. */
+  val ciallo: Boolean = false,
+  /** Package of the generated Ciallo binding. Required when [ciallo] is true. */
+  val cialloPackage: String = "",
+  /** Name the generated Ciallo binding registers under. Defaults to the generated API name. */
+  val cialloName: String = "",
 )
 
 /**

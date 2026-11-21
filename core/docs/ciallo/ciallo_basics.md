@@ -35,7 +35,7 @@ build @Blocks.duo at(4, 3) config null
 
 ## 词法与表达式
 
-- 字面量：`42`、`3.14`、`1f`、`5s`/`1.5m`/`2h`、`"..."`、`"""..."""`、`true`/`false`/`null`、`[1, 2]`
+- 字面量：`42`、`3.14`、`1f`、`5s`/`1.5m`/`2h`/`60t`、`"..."`、`"""..."""`、`true`/`false`/`null`、`[1, 2]`
 - 字符串支持 `\n \t \" \\ \{ \} \uXXXX`，以及 `{expr}` 插值：`"x = {1 + 2}"` → `x = 3`。字面花括号用 `\{`。
 - 优先级：比较 `== != < <= > >=` < `+ -` < `* / %` < 一元 `- !` < `( )` / 链。
 - **拼接只在左侧是字符串时**：`"a" + 1 + 2` → `a12`；`1 + 2 + "a"` 报 `unknown operator '+'`。
@@ -55,14 +55,14 @@ build @Blocks.duo at(4, 3) config null
 
 ## 值类型
 
-`Nil` `Bool` `Int` `Float` `Time` `Str` `Arr` `Symbol` `Obj` `Block` `Native` `Java`。
+`Nil` `Bool` `Int` `Float` `Time` `Str` `Arr` `Symbol` `Obj` `Block` `Native` `Java` `Host`。
 
 Ciallo 没有对象字面量；对象来自宿主注册或 `apply`。成员访问都需先经变量/符号。
 
 - **数字**：`add/sub/mul/div/mod`、`less/lessEq/greater/greaterEq/eq/ne`、`negate`、`toInt/toFloat`，属性 `sign/isZero/isNaN`
 - **字符串**：`size/length`、`upper/lower/trim`、`contains/split/startsWith/endsWith`、`get`、`toInt/toFloat`
 - **数组**：`size/length/first/last/empty`、`add/get/set/remove/clear`、`join/contains/indexOf`、`map/filter/each`
-- **时间**：`millis/seconds/amount/unit`、`toMillis()/toSeconds()`
+- **时间**：`1s` `1m` `1h` `60t`（`t` 是游戏 tick，`1s = 60t`）；`millis/seconds/ticks/amount/unit`、`toMillis()/toSeconds()/toTicks()`
 - **块**：`run/then/apply`（最多一个参数，绑定为 `it`）
 
 比较辅助只有成员形式；自由函数只有 `add/sub/mul/div`。
@@ -117,6 +117,8 @@ env.native("at", listOf(CialloType.Float, CialloType.Float)) { _, _ -> CialloStr
 扩展点（都通过 `CialloOperations` 注册，解释器不按值类型分支）：
 
 `CialloBinaryOperator` / `CialloPrefixOperator`（运算符）、`CialloFreeFunction`（顶层函数）、`CialloMemberTable` / `CialloMemberHandler`（成员）、`CialloNumberSuffixParser`（字面量后缀）、`CialloNameResolver`（兜底名字解析）。
+
+宿主对象优先用 `peroxicore.ciallo.host.CialloHostBinder` 绑定：它按 `CialloType` 选重载、把 `Float` 参数接收 `Int`/`Time`（按 tick 换算），并把标了 `record` 的动作捕捉为可回放的步骤（`build @Blocks.duo config @Items.copper at(4, 4)`）。`CialloHostValue` / `CialloHostObject` 的值不需要反射，也不受 sandbox 限制。
 
 ```kotlin
 val environment = CialloEnvironment(output = { println(it) })

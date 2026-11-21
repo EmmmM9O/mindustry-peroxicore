@@ -52,6 +52,9 @@ data class CialloTime(val amount: Double, val unit: CialloTimeUnit) : CialloValu
 
   val millis: Long get() = (amount * unit.millis).toLong()
 
+  /** This duration in game ticks; `1s` is `60t`. */
+  val ticks: Float get() = (amount * unit.ticks).toFloat()
+
   override fun display(): String {
     val number = if (amount == amount.toLong().toDouble()) amount.toLong().toString() else amount.toString()
     return number + unit.suffix
@@ -133,6 +136,43 @@ data class CialloNativeValue(val name: String, val native: CialloNative) : Ciall
 
   override fun display(): String = "<native:$name>"
 }
+
+/**
+ * A host object with an explicit member table.
+ *
+ * Unlike [CialloJavaValue] this is safe by construction: the host decides which
+ * members exist, so no reflection and no sandbox check is involved.  [value] is
+ * the underlying object; [hostValue] unwraps it.
+ */
+class CialloHostValue(
+  val value: Any,
+  val typeName: String,
+  override val members: CialloMembers,
+  private val displayText: String? = null,
+) : CialloValue {
+  override val kind: CialloKind get() = CialloKind.Host
+
+  override fun display(): String = displayText ?: value.toString()
+
+  override fun equals(other: Any?): Boolean = other is CialloHostValue && other.value === value
+
+  override fun hashCode(): Int = System.identityHashCode(value)
+}
+
+/** A host value that exposes its underlying object for typed parameter matching. */
+interface CialloHostObject : CialloValue {
+  val host: Any
+}
+
+/** The object behind a [CialloHostValue], [CialloJavaValue] or [CialloHostObject]. */
+val CialloValue.hostValue: Any
+  get() =
+    when (this) {
+      is CialloHostValue -> value
+      is CialloJavaValue -> value
+      is CialloHostObject -> host
+      else -> this
+    }
 
 /** A host JVM object.  Access goes through [CialloJavaBridge] and the sandbox. */
 class CialloJavaValue(val value: Any) : CialloValue {

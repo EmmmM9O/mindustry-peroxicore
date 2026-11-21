@@ -30,6 +30,9 @@ import peroxicore.ponder.ui.*
   javaPackage = "peroxicore.ponder.api.java",
   javaName = "PonderJavaWorld",
   annotations = ["peroxicore.ponder.api.dsl.PonderDslMarker"],
+  ciallo = true,
+  cialloPackage = "peroxicore.ponder.api.ciallo",
+  cialloName = "WorldPonderActionScopeCiallo",
 )
 @PonderDslMarker
 interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<Self>> :
