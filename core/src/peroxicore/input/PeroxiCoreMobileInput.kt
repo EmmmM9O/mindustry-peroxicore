@@ -98,39 +98,4 @@ class PeroxiCoreMobileInput : PeroxiCoreInput() {
     }
     return false
   }
-
-  val vector = Vec2()
-  val edgePan = Scl.scl(60f)
-  val maxPanSpeed = 1.3f
-
-  protected fun autoPan() {
-    val screenX = Core.input.mouseX()
-    val screenY = Core.input.mouseY()
-
-    var panX = 0f
-    var panY = 0f
-
-    if (screenX <= edgePan) {
-      panX = -(edgePan - screenX)
-    }
-
-    if (screenX >= Core.graphics.width - edgePan) {
-      panX = (screenX - Core.graphics.width) + edgePan
-    }
-
-    if (screenY <= edgePan) {
-      panY = -(edgePan - screenY)
-    }
-
-    if (screenY >= Core.graphics.height - edgePan) {
-      panY = (screenY - Core.graphics.height) + edgePan
-    }
-
-    vector.set(panX, panY).scl(Core.camera.width / Core.graphics.width)
-    vector.limit(maxPanSpeed)
-
-    // pan view
-    Core.camera.position.x += vector.x
-    Core.camera.position.y += vector.y
-  }
 }

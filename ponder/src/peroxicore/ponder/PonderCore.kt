@@ -234,7 +234,7 @@ object PonderCore : ApplicationListener, TimelineContext {
   }
 
   fun initPonder() {
-//    PonderRecorder.init()
+    PonderRecorder.init()
     input.init()
     renderer.init()
     ponder = PonderDialog()

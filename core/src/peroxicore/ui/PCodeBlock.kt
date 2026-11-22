@@ -21,7 +21,7 @@ import mindustry.ui.*
  * in a horizontally scrolling [ScrollPane].
  *
  * This is the abstraction seam: the `lwjgl` font module plugs its ligature-aware
- * `peroxicore.PLabel` in here instead of arc's bitmap [Label].
+ * `peroxicore.font.PLabel` in here instead of arc's bitmap [Label].
  *
  * [tokens] are the highlight ranges produced by [peroxicore.ui.CodeHighlighter]; an empty list
  * means the code is drawn in one uniform color. Splitting highlighted text into runs is the
@@ -130,8 +130,8 @@ open class LabelCodeTextFactory @JvmOverloads constructor(
  * language tag and a copy-to-clipboard button in the top-right corner.
  *
  * The text itself comes from [textFactory], so renderers other than arc's bitmap [Label] can be
- * used (see `peroxicore.PLabelCodeTextFactory` in the `lwjgl` font module). The block is sized to
- * its content; put it in a cell with `left()`/`top()` to avoid stretching it.
+ * used (see `peroxicore.font.PLabelCodeTextFactory` in the `lwjgl` font module). The block is
+ * sized to its content; put it in a cell with `left()`/`top()` to avoid stretching it.
  *
  * @param code raw source text
  * @param textFactory creates the text actor; see [CodeTextFactory]

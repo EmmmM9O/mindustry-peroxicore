@@ -10,6 +10,7 @@ import arc.input.GestureDetector.*
 import arc.math.geom.*
 import arc.struct.*
 import arc.scene.*
+import arc.scene.ui.layout.*
 import arc.util.*
 import arc.util.pooling.*
 import mindustry.*
@@ -157,6 +158,41 @@ abstract class PeroxiCoreInput() : InputProcessor, GestureListener {
   fun world(cursorX: Float, cursorY: Float) = Core.input.mouseWorld(cursorX, cursorY)
 
   fun tile(pos: Vec2) = world.tile(World.toTile(pos.x), World.toTile(pos.y))
+
+  protected val panVector = Vec2()
+  protected val edgePan = Scl.scl(60f)
+  protected val maxPanSpeed = 1.3f
+
+  /** Pans the camera when the cursor is near the screen edge while a selection is dragged. */
+  protected fun autoPan() {
+    val screenX = Core.input.mouseX()
+    val screenY = Core.input.mouseY()
+
+    var panX = 0f
+    var panY = 0f
+
+    if (screenX <= edgePan) {
+      panX = -(edgePan - screenX)
+    }
+
+    if (screenX >= Core.graphics.width - edgePan) {
+      panX = (screenX - Core.graphics.width) + edgePan
+    }
+
+    if (screenY <= edgePan) {
+      panY = -(edgePan - screenY)
+    }
+
+    if (screenY >= Core.graphics.height - edgePan) {
+      panY = (screenY - Core.graphics.height) + edgePan
+    }
+
+    panVector.set(panX, panY).scl(Core.camera.width / Core.graphics.width)
+    panVector.limit(maxPanSpeed)
+
+    Core.camera.position.x += panVector.x
+    Core.camera.position.y += panVector.y
+  }
 
   override fun longPress(
     x: Float,

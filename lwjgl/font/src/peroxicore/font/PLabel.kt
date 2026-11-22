@@ -1,4 +1,4 @@
-package peroxicore
+package peroxicore.font
 
 import arc.graphics.*
 import arc.graphics.g2d.*

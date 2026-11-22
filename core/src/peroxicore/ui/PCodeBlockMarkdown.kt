@@ -82,7 +82,7 @@ class PCodeBlockDraw private constructor() : Markdown.MarkdownDraw(), Markdown.A
  * [MarkdownProvider] rendering fenced and indented code blocks with [PCodeBlock].
  *
  * Pass a [CodeTextFactory] to change how the source is drawn; the `lwjgl` font module provides
- * `peroxicore.PLabelCodeTextFactory`, which renders through a ligature-aware `PLabel`. When no
+ * `peroxicore.font.PLabelCodeTextFactory`, which renders through a ligature-aware `PLabel`. When no
  * factory is given, the markdown style's `codeFont` is used through [LabelCodeTextFactory].
  *
  * [highlighterResolver] picks a [CodeHighlighter] from the fenced block's language tag. It

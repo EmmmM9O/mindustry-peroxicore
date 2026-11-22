@@ -82,12 +82,8 @@ class PeroxiCore : POMod() {
 
   override fun init() {
     if (Vars.headless) return
-    if (Vars.mobile) {
-      input = PeroxiCoreMobileInput()
-      input.add()
-    } else {
-      // TODO Desktop
-    }
+    input = if (Vars.mobile) PeroxiCoreMobileInput() else PeroxiCoreDesktopInput()
+    input.add()
 
     Events.run(EventType.Trigger.drawOver, this::drawOver)
     Events.run(EventType.Trigger.update, this::update)

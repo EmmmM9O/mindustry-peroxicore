@@ -9,6 +9,7 @@ import mindustry.mod.*
 import mindustry.ui.dialogs.*
 import org.lwjgl.system.*
 import peroxicore.annotations.*
+import peroxicore.font.*
 
 @ModConfig(
   name = "peroxicore-lwjgl-font",
