@@ -21,7 +21,7 @@ import peroxicore.util.handler.*
   displayName = "PeroxiCore",
 )
 @ImportPeroxiCore
-class PeroxiCore : Mod() {
+class PeroxiCore : POMod() {
   companion object {
     var debug = Log.level == Log.LogLevel.debug || Core.settings.getBool("peroxicore-debug", false)
     val log: Logger =
@@ -36,6 +36,8 @@ class PeroxiCore : Mod() {
     lateinit var debugTools: DebugTools
 
     lateinit var input: PeroxiCoreInput
+    
+    lateinit var mod: Mods.LoadedMod
   }
 
   init {
@@ -56,6 +58,10 @@ class PeroxiCore : Mod() {
     }
 
     log.info { "Peroxicore Load" }
+
+    Events.on(EventType.FileTreeInitEvent::class.java) {
+      mod = this.modState
+    }
 
     Events.on(EventType.ClientLoadEvent::class.java) {
       addSettings()

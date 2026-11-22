@@ -54,7 +54,8 @@ chain
     ;
 
 segment
-    : AT namePath args? block?      # symbolSegment
+    : DOT namePath args? block?     # memberSegment
+    | AT namePath args? block?      # symbolSegment
     | namePath args? block?         # callSegment
     | literal                       # literalSegment
     | block                         # blockSegment

@@ -4,6 +4,7 @@ import arc.*
 import mindustry.*
 import mindustry.game.*
 import mindustry.mod.*
+import peroxicore.mod.*
 import peroxicore.annotations.*
 import peroxicore.ponder.*
 import peroxicore.ponder.record.*
@@ -14,12 +15,16 @@ import peroxicore.ponder.record.*
   dependencies = ["peroxicore"]
 )
 @ImportPeroxiCore
-class PeroxiCorePonder : Mod() {
+class PeroxiCorePonder : POMod() {
   companion object {
     lateinit var recordTools: RecordTools
+    lateinit var mod: Mods.LoadedMod
   }
   init {
     if (!Vars.clientLoaded) {
+      Events.on(EventType.FileTreeInitEvent::class.java) {
+        mod = this.modState
+      }
       if (!Vars.headless) {
         PonderCore.setup()
         val core = (Core.app.listeners.find { it is ApplicationCore } as ApplicationCore)

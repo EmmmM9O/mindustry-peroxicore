@@ -220,10 +220,32 @@ class CialloInterpreter(
           segment.args()?.let { args += buildArgs(it) }
           segment.block()?.let { args += SBlockLiteral(visitBlock(it) as CialloBlockValue) }
           current =
-            if (args.isEmpty()) {
+            if (segment.args() == null && segment.block() == null) {
               SMember(current, path)
             } else {
               SCall(current, path, args)
+            }
+        }
+
+        is CialloParser.MemberSegmentContext -> {
+          // `.name` continues whatever the previous segment produced: `at(5, 5).showConfig()`
+          // is the same chain as `at(5, 5) showConfig()`.
+          val receiver =
+            current
+              ?: throw CialloRuntimeException(
+                "a member call needs a receiver, write value.name(...)",
+                lineOf(segment),
+                columnOf(segment),
+              )
+          val path = splitPath(segment.namePath().text)
+          val args = mutableListOf<SExpr>()
+          segment.args()?.let { args += buildArgs(it) }
+          segment.block()?.let { args += SBlockLiteral(visitBlock(it) as CialloBlockValue) }
+          current =
+            if (segment.args() == null && segment.block() == null) {
+              SMember(receiver, path)
+            } else {
+              SCall(receiver, path, args)
             }
         }
 

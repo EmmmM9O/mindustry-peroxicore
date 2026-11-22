@@ -25,6 +25,8 @@ class PFreeTypeFont
 private constructor(
   private val library: Long,
   private val face: FT_Face,
+  /** Owned copy of the font file when the face was created from memory; freed on [dispose]. */
+  private val faceMemory: ByteBuffer?,
   private val hbFont: Long,
   private val hbBuffer: Long,
   //	private val fontBytes: ByteBuffer,
@@ -323,12 +325,14 @@ private constructor(
     HarfBuzz.hb_font_destroy(hbFont)
     FreeType.FT_Done_Face(face)
     if (library != NULL) FreeType.FT_Done_FreeType(library)
+    faceMemory?.let { MemoryUtil.memFree(it) }
     atlasTexture.dispose()
   }
 
   companion object {
     private const val NULL = 0L
 
+    /** Loads a font face from a filesystem path (see [load]). */
     @JvmStatic
     fun load(
       path: String,
@@ -338,58 +342,120 @@ private constructor(
       atlasPadding: Int = 1,
     ): PFreeTypeFont {
       return MemoryStack.stackPush().use { stack ->
-        val libPtr = stack.mallocPointer(1)
-        val libErr = FreeType.FT_Init_FreeType(libPtr)
-        if (libErr != 0)
-          throw ArcRuntimeException("PFreeTypeFont: FT_Init_FreeType failed ($libErr)")
-        val library = libPtr.get(0)
+        val library = initLibrary()
 
         val facePtr = stack.mallocPointer(1)
         val faceErr = FreeType.FT_New_Face(library, path, 0, facePtr)
         if (faceErr != 0) {
           FreeType.FT_Done_FreeType(library)
-          throw ArcRuntimeException("PFreeTypeFont: FT_New_Memory_Face failed ($faceErr)")
-        }
-        val face = FT_Face.create(facePtr.get(0))
-
-        val sizeErr = FreeType.FT_Set_Pixel_Sizes(face, 0, size)
-        if (sizeErr != 0) {
-          FreeType.FT_Done_Face(face)
-          FreeType.FT_Done_FreeType(library)
-          throw ArcRuntimeException("PFreeTypeFont: FT_Set_Pixel_Sizes failed ($sizeErr)")
+          throw ArcRuntimeException("PFreeTypeFont: FT_New_Face failed ($faceErr)")
         }
 
-        val sizeStruct = face.size() ?: throw ArcRuntimeException("PFreeTypeFont: face has no size")
-        val metrics = sizeStruct.metrics()
-        val asc = metrics.ascender() / 64.0f
-        val desc = metrics.descender() / 64.0f
-        val lh = metrics.height() / 64.0f
-        val ppem = metrics.x_ppem().toInt()
-
-        val hbFont = HarfBuzz.hb_ft_font_create(face.address(), null)
-        val hbBuffer = HarfBuzz.hb_buffer_create()
-
-        val texture = Texture(atlasWidth, atlasHeight)
-        texture.setFilter(Texture.TextureFilter.linear, Texture.TextureFilter.linear)
-        texture.setWrap(Texture.TextureWrap.clampToEdge, Texture.TextureWrap.clampToEdge)
-
-        PFreeTypeFont(
-          library,
-          face,
-          hbFont,
-          hbBuffer,
-          texture,
-          atlasWidth,
-          atlasHeight,
-          atlasPadding,
-          size,
-          asc,
-          desc,
-          lh,
-          capHeightOf(face, asc),
-          ppem,
-        )
+        create(library, FT_Face.create(facePtr.get(0)), null, size, atlasWidth, atlasHeight, atlasPadding)
       }
+    }
+
+    /**
+     * Loads a font face from raw font file [data] (TTF/OTF/WOFF bytes), for fonts that are not
+     * reachable through a real filesystem path.
+     *
+     * The bytes are handed to FreeType as a direct buffer owned by the font and released on
+     * [dispose].
+     */
+    @JvmStatic
+    fun load(
+      data: ByteArray,
+      size: Int,
+      atlasWidth: Int = 1024,
+      atlasHeight: Int = 1024,
+      atlasPadding: Int = 1,
+    ): PFreeTypeFont {
+      val library = initLibrary()
+      val mem = MemoryUtil.memAlloc(data.size)
+      mem.put(data)
+      mem.flip()
+
+      val facePtr = MemoryUtil.memAllocPointer(1)
+      val faceErr = FreeType.FT_New_Memory_Face(library, mem, 0, facePtr)
+      val faceAddress = facePtr.get(0)
+      MemoryUtil.memFree(facePtr)
+
+      if (faceErr != 0) {
+        FreeType.FT_Done_FreeType(library)
+        MemoryUtil.memFree(mem)
+        throw ArcRuntimeException("PFreeTypeFont: FT_New_Memory_Face failed ($faceErr)")
+      }
+
+      return create(library, FT_Face.create(faceAddress), mem, size, atlasWidth, atlasHeight, atlasPadding)
+    }
+
+    private fun initLibrary(): Long {
+      return MemoryStack.stackPush().use { stack ->
+        val libPtr = stack.mallocPointer(1)
+        val libErr = FreeType.FT_Init_FreeType(libPtr)
+        if (libErr != 0)
+          throw ArcRuntimeException("PFreeTypeFont: FT_Init_FreeType failed ($libErr)")
+        libPtr.get(0)
+      }
+    }
+
+    private fun create(
+      library: Long,
+      face: FT_Face,
+      faceMemory: ByteBuffer?,
+      size: Int,
+      atlasWidth: Int,
+      atlasHeight: Int,
+      atlasPadding: Int,
+    ): PFreeTypeFont {
+      val sizeErr = FreeType.FT_Set_Pixel_Sizes(face, 0, size)
+      if (sizeErr != 0) {
+        releaseRaw(library, face, faceMemory)
+        throw ArcRuntimeException("PFreeTypeFont: FT_Set_Pixel_Sizes failed ($sizeErr)")
+      }
+
+      val sizeStruct = face.size()
+      if (sizeStruct == null) {
+        releaseRaw(library, face, faceMemory)
+        throw ArcRuntimeException("PFreeTypeFont: face has no size")
+      }
+      val metrics = sizeStruct.metrics()
+      val asc = metrics.ascender() / 64.0f
+      val desc = metrics.descender() / 64.0f
+      val lh = metrics.height() / 64.0f
+      val ppem = metrics.x_ppem().toInt()
+
+      val hbFont = HarfBuzz.hb_ft_font_create(face.address(), null)
+      val hbBuffer = HarfBuzz.hb_buffer_create()
+
+      val texture = Texture(atlasWidth, atlasHeight)
+      texture.setFilter(Texture.TextureFilter.linear, Texture.TextureFilter.linear)
+      texture.setWrap(Texture.TextureWrap.clampToEdge, Texture.TextureWrap.clampToEdge)
+
+      return PFreeTypeFont(
+        library,
+        face,
+        faceMemory,
+        hbFont,
+        hbBuffer,
+        texture,
+        atlasWidth,
+        atlasHeight,
+        atlasPadding,
+        size,
+        asc,
+        desc,
+        lh,
+        capHeightOf(face, asc),
+        ppem,
+      )
+    }
+
+    /** Releases the native handles owned during construction, before a [PFreeTypeFont] exists. */
+    private fun releaseRaw(library: Long, face: FT_Face, faceMemory: ByteBuffer?) {
+      FreeType.FT_Done_Face(face)
+      FreeType.FT_Done_FreeType(library)
+      faceMemory?.let { MemoryUtil.memFree(it) }
     }
 
     /** Approximate cap height from the glyph for 'A', falling back to the font ascent. */

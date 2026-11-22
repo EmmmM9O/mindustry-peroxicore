@@ -18,11 +18,11 @@
   }
 
   frame(2s) {
-    at(5, 5) showConfig()
+    at(5, 5).showConfig()
   }
 
   frame(3s) {
-    at(5, 5) focus(5)
+    at(5, 5).focus(5)
   }
 
   frame(4s) {

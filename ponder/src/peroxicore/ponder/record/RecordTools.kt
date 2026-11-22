@@ -117,31 +117,43 @@ class RecordTools : FloatingTable() {
     settingsDialog.show()
   }
 
-  /** 导出格式选择对话框。 */
+  /** 导出格式选择对话框；每种格式都有「复制到剪贴板」与「保存文件」两个操作。 */
   private inner class ExportDialog : BaseDialog("导出录制") {
     init {
       shouldPause = true
       cont.clearChildren()
       cont.margin(12f)
-      cont.add("选择导出格式：").left().padBottom(8f).row()
+      cont.add("选择格式：").left().padBottom(8f).row()
       PonderRecorder.exporters.forEach { exporter ->
-        cont.button(exporter.name, Styles.flatt) {
-          hide()
-          doExport(exporter)
+        cont.table { row ->
+          row.left()
+          row.add(exporter.name).left().growX().padRight(12f)
+          row
+            .button("复制", Icon.copy, Styles.flatt) {
+              copyToClipboard(exporter)
+            }
+            .size(140f, 52f)
+            .padRight(6f)
+          row
+            .button("保存", Icon.save, Styles.flatt) {
+              hide()
+              save(exporter)
+            }
+            .size(140f, 52f)
         }
         cont.row()
       }
-      cont.button("复制到剪贴板（${PonderRecorder.exporters.first().name}）", Styles.flatt) {
-        val text = PonderRecorder.exporters.first().build()
-        Core.app.setClipboardText(text)
-        hide()
-        FullTextDialog().show("已复制导出内容", text)
-      }
-      cont.row()
       addCloseButton()
     }
 
-    private fun doExport(exporter: SceneExporter) {
+    private fun copyToClipboard(exporter: SceneExporter) {
+      val text = exporter.build()
+      Core.app.setClipboardText(text)
+      hide()
+      CodePreviewDialog().show("已复制 ${exporter.name} 导出内容", exporter, text)
+    }
+
+    private fun save(exporter: SceneExporter) {
       val text = exporter.build()
       FileChooser.export("ponder-scene", exporter.extension) { file -> file.writeString(text) }
     }

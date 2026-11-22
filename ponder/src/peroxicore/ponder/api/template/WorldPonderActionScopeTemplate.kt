@@ -79,6 +79,12 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
     }
   }
 
+  fun Region.fillOverlay(overlay: Block) {
+    each { x, y ->
+      tiles.get(x, y).setOverlay(overlay)
+    }
+  }
+
   fun Region.fill(block: Block): Unit = this.fill(block, 0, null)
 
   fun Region.fill(
@@ -94,9 +100,26 @@ interface WorldPonderActionScopeTemplate<Self : WorldPonderActionScopeTemplate<S
     if (block is Floor) fillFloor(block)
   }
 
+  /** Fills every tile in this region with [block]; only meaningful for 1x1 blocks. */
+  fun Region.fillBlock(block: Block): Unit = this.fillBlock(block, 0)
+
+  fun Region.fillBlock(
+    block: Block,
+    rotation: Int,
+  ) {
+    each { x, y ->
+      tiles.get(x, y)?.setBlock(block, team, rotation)
+    }
+  }
+
   @ToAction
   fun Point.setFloor(floor: Floor) {
     tiles.get(x, y).setFloor(floor)
+  }
+
+  @ToAction
+  fun Point.setOverlay(overlay: Block) {
+    tiles.get(x, y).setOverlay(overlay)
   }
 
   @ToAction

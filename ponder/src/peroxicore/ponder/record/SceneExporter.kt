@@ -13,6 +13,13 @@ interface SceneExporter {
   /** 保存时使用的扩展名，不带点。 */
   val extension: String
 
+  /**
+   * 导出内容对应的语言标签（等同 fenced code block 的 info 串），用于预览时挑选高亮器。
+   * 空串表示不指定。
+   */
+  val language: String
+    get() = ""
+
   /** 生成导出内容。 */
   fun build(): String
 }
@@ -21,6 +28,7 @@ interface SceneExporter {
 object KotlinSceneExporter : SceneExporter {
   override val name: String = "Kotlin DSL"
   override val extension: String = "kt"
+  override val language: String = "kotlin"
 
   override fun build(): String = PonderRecorder.buildKotlinDsl()
 }

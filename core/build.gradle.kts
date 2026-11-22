@@ -13,6 +13,10 @@ dependencies {
   api(kotlin("stdlib-jdk8"))
   api(kotlin("reflect"))
   api("com.github.EB-wilson.UniverseKit:reflection:1.4")
+  api("com.github.EB-wilson.UniverseKit:markdown:1.4")
+  // markdown 的 Node 类型出现在 MarkdownProvider 的公开签名里，但 UK 只把它声明为
+  // implementation，所以下游模块（例如 :core 的 PCodeBlockProvider）需要自己带上它。
+  api("org.commonmark:commonmark:0.27.1")
   api("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
   compileOnlyApi("com.github.EB-wilson.UniverseKit:platform:1.4")
   compileOnlyApi("com.github.EB-wilson.UniverseKit:expects:1.4")

@@ -6,14 +6,17 @@ import mindustry.content.*
 import mindustry.ctype.*
 import mindustry.game.*
 import mindustry.gen.*
+import peroxicore.*
 import peroxicore.ponder.*
 import peroxicore.ponder.api.dsl.*
+import peroxicore.ponder.api.ciallo.*
 import peroxicore.ponder.scene.*
 
 object PonderRegistry {
   val contentScenes = ObjectMap<UnlockableContent, PonderScene>()
 
   fun load() {
+    /*
     Blocks.itemSource.register {
       keyframes {
         speed(1f)
@@ -58,7 +61,7 @@ object PonderRegistry {
           at(8, 8).showConfig()
         }
       }
-    }
+    }*/
     Blocks.electrolyzer.register {
       keyframes {
         speed(1f)
@@ -105,7 +108,7 @@ object PonderRegistry {
       }
     }
     PonderRegistryJava.init()
-//    CialloPonder.loadScripts()
+    CialloPonder.loadScripts(PeroxiCorePonder.mod.root.child("scripts"))
   }
 
   fun has(content: UnlockableContent) = contentScenes.containsKey(content)

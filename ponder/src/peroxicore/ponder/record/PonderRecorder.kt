@@ -67,7 +67,7 @@ data class TileRect(
     get() = y + height
 }
 
-/** 合并后的建筑矩形；只描述同 id、同朝向的建筑中心格。 */
+/** 合并后的建筑矩形；只描述同 id、同朝向、同配置的建筑中心格。 */
 data class BlockRect(
   val x: Int,
   val y: Int,
@@ -75,6 +75,7 @@ data class BlockRect(
   val height: Int,
   val id: Int,
   val rotation: Int,
+  val config: Any? = null,
 ) {
   val right: Int
     get() = x + width
@@ -116,7 +117,7 @@ object PonderRecorder {
   var tailTicks = 60f
 
   /** 所有可用的导出器；新增格式只需要往这里加一个实现。 */
-  val exporters = mutableListOf<SceneExporter>(KotlinSceneExporter)
+  val exporters = mutableListOf<SceneExporter>(KotlinSceneExporter, CialloSceneExporter)
 
   /** 初始地图使用的合并器，可换成 [GreedyTileMerger] / [IncrementalTileMerger]。 */
   var merger: TileMerger = ScanlineTileMerger()
@@ -277,8 +278,8 @@ object PonderRecorder {
   /**
    * 捕获框选区域并合并成矩形。
    *
-   * 地面/覆盖层各用一个 [TileChunk] 合并；建筑先按方块 id 合并，再按朝向切成行段，
-   * 因为 [TileData] 只有 16 位，无法同时容纳 id 与 rotation。
+   * 地面/覆盖层各用一个 [TileChunk] 合并；建筑先按方块 id 合并，再按朝向与 config 切成行段，
+   * 因为 [TileData] 只有 16 位，无法同时容纳 id、rotation 与 config。
    */
   fun captureInitial() {
     if (!hasArea) return
@@ -287,6 +288,7 @@ object PonderRecorder {
     val overlays = TileChunk(width, height)
     val blocks = TileChunk(width, height)
     val rotations = ShortArray(width * height)
+    val configs = arrayOfNulls<Any?>(width * height)
     for (lx in 0 until width) {
       for (ly in 0 until height) {
         val tile = tiles.get(x1 + lx, y1 + ly) ?: continue
@@ -294,7 +296,9 @@ object PonderRecorder {
         overlays.setData(lx, ly, tile.overlay().id)
         if (tile.isCenter() && tile.block() !== Blocks.air) {
           blocks.setData(lx, ly, tile.block().id)
-          rotations[ly * width + lx] = (tile.build?.rotation ?: 0).toShort()
+          val build = tile.build
+          rotations[ly * width + lx] = (build?.rotation ?: 0).toShort()
+          configs[ly * width + lx] = build?.config()
         }
       }
     }
@@ -304,7 +308,7 @@ object PonderRecorder {
         height,
         tileRects(floors),
         tileRects(overlays),
-        blockRects(blocks, rotations),
+        blockRects(blocks, rotations, configs),
       )
   }
 
@@ -320,6 +324,7 @@ object PonderRecorder {
   private fun blockRects(
     chunk: TileChunk,
     rotations: ShortArray,
+    configs: Array<Any?>,
   ): List<BlockRect> {
     val out = mutableListOf<BlockRect>()
     chunk.merged(merger).forEach { merged ->
@@ -330,7 +335,8 @@ object PonderRecorder {
       if (block != null && block.size > 1) {
         for (y in merged.y until merged.y + merged.height.toInt()) {
           for (x in merged.x until merged.x + merged.width.toInt()) {
-            out += BlockRect(x, y, 1, 1, id, rotations[y * width + x].toInt())
+            val i = y * width + x
+            out += BlockRect(x, y, 1, 1, id, rotations[i].toInt(), configs[i])
           }
         }
         return@forEach
@@ -339,10 +345,18 @@ object PonderRecorder {
       for (y in merged.y until merged.y + merged.height.toInt()) {
         var x = merged.x
         while (x < right) {
-          val rotation = rotations[y * width + x].toInt()
+          val start = y * width + x
+          val rotation = rotations[start].toInt()
+          val config = configs[start]
           var end = x + 1
-          while (end < right && rotations[y * width + end].toInt() == rotation) end++
-          out += BlockRect(x, y, end - x, 1, id, rotation)
+          while (
+            end < right &&
+              rotations[y * width + end].toInt() == rotation &&
+              configs[y * width + end] == config
+          ) {
+            end++
+          }
+          out += BlockRect(x, y, end - x, 1, id, rotation, config)
           x = end
         }
       }
@@ -525,10 +539,13 @@ object PonderRecorder {
       val block = Vars.content.block(rect.id) ?: return@forEach
       if (block.size > 1 || rect.width * rect.height == 1) {
         tiles.get(rect.x, rect.y)?.setBlock(block, team, rect.rotation)
+        rect.config?.let { config -> tiles.get(rect.x, rect.y)?.build?.configureAny(config) }
       } else {
         for (x in rect.x until rect.right) {
           for (y in rect.y until rect.bottom) {
-            tiles.get(x, y)?.setBlock(block, team, rect.rotation)
+            val tile = tiles.get(x, y) ?: continue
+            tile.setBlock(block, team, rect.rotation)
+            rect.config?.let { config -> tile.build?.configureAny(config) }
           }
         }
       }
@@ -619,10 +636,12 @@ object PonderRecorder {
     map.blocks.forEach { rect ->
       val block = Vars.content.block(rect.id) ?: return@forEach
       if (block === Blocks.air) return@forEach
+      val config = rect.config?.let { "configure(${configExpression(it)})" }
       if (block.size > 1 || rect.width * rect.height == 1) {
         out
           .append(indent)
           .append("at(${rect.x}, ${rect.y}).setBlock(${blockRef(rect.id)}, ${rect.rotation})\n")
+        if (config != null) out.append(indent).append("at(${rect.x}, ${rect.y}).$config\n")
       } else {
         out
           .append(indent)
@@ -630,6 +649,12 @@ object PonderRecorder {
           .append(
             ".each { x, y -> tiles.get(x, y).setBlock(${blockRef(rect.id)}, team, ${rect.rotation}) }\n"
           )
+        if (config != null) {
+          out
+            .append(indent)
+            .append(regionCall(rect.x, rect.y, rect.right, rect.bottom))
+            .append(".each { x, y -> tiles.get(x, y).build?.configureAny(${configExpression(rect.config)}) }\n")
+        }
       }
     }
   }
